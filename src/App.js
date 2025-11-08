@@ -7,45 +7,50 @@ import { useAuth } from './AuthContext';
 import './App.css';
 
 // 1. Importamos los componentes de la interfaz
+// (Usando los nombres de archivo que Vercel espera, ej. 'login.js', 'solicitudes.js')
 import Login from './components/login'; 
 import Dashboard from './components/Dashboard';
-import Solicitudes from './components/solicitudes'; // 🌟 ¡NUEVA IMPORTACIÓN!
+import Solicitudes from './components/solicitudes'; 
+// 🌟 ¡NUEVA IMPORTACIÓN!
+import SolicitudForm from './components/SolicitudForm'; 
 
 // 2. Definición del componente PrivateRoute (Guardia de Ruta)
-// Debe estar definido ANTES de que la función App lo use.
 const PrivateRoute = ({ children }) => {
-    // Obtenemos el estado de autenticación
-    const { currentUser, loading } = useAuth();
-    
-    // Muestra un estado de carga mientras Firebase verifica el usuario
-    if (loading) {
-        return <p className="loading-message">Cargando...</p>;
-    }
+    // Obtenemos el estado de autenticación
+    const { currentUser, loading } = useAuth();
+    
+    // Muestra un estado de carga mientras Firebase verifica el usuario
+    if (loading) {
+        return <p className="loading-message">Cargando...</p>;
+    }
 
-    // Si el usuario existe, muestra el componente hijo (Dashboard)
-    // Si no está logueado, redirige a /login
-    return currentUser ? children : <Navigate to="/login" replace />;
+    // Si el usuario existe, muestra el componente hijo (Dashboard)
+    // Si no está logueado, redirige a /login
+    return currentUser ? children : <Navigate to="/login" replace />;
 };
 
 function App() {
-    return (
-        <div className="App">
-            <Routes>
-                
-                {/* Ruta pública: Login (ruta en minúsculas) */}
-                <Route path="/login" element={<Login />} />
-                
-                {/* Ruta Privada: Dashboard (Protegida) */}
-                <Route 
-                    path="/dashboard" 
-                    element={
-                        <PrivateRoute>
-                            <Dashboard />
-                        </PrivateRoute>
-                    } 
-                />
+    return (
+        <div className="App">
+            <Routes>
+                
+                {/* Ruta pública: Login (ruta en minúsculas) */}
+                <Route path="/login" element={<Login />} />
 
-                {/* 🌟 ¡AQUÍ ESTÁ LA RUTA QUE FALTABA! 🌟 */}
+                {/* 🌟 ¡NUEVA RUTA PÚBLICA! 🌟 */}
+                <Route path="/solicitar" element={<SolicitudForm />} />
+                
+                {/* Ruta Privada: Dashboard (Protegida) */}
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        <PrivateRoute>
+                            <Dashboard />
+                        </PrivateRoute>
+                    } 
+                />
+                
+                {/* Ruta Privada: Solicitudes (Protegida) */}
                 <Route
                     path="/solicitudes"
                     element={
@@ -54,13 +59,13 @@ function App() {
                         </PrivateRoute>
                     }
                 />
-                
-                {/* Redirección: Si alguien va a la raíz, lo enviamos al dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                
-            </Routes>
-        </div>
-    );
+                
+                {/* Redirección: Si alguien va a la raíz, lo enviamos al dashboard */}
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                
+            </Routes>
+        </div>
+    );
 }
 
 export default App;
