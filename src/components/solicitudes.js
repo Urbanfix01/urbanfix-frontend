@@ -21,16 +21,25 @@ const getStatusVariant = (estado) => {
         case 'FINALIZADO':
         case 'CERRADO':
             return 'success'; // Verdes
+        
+        // 🌟 CORRECCIÓN ESLINT (no-fallthrough)
+        // eslint-disable-next-line no-fallthrough
         case 'PENDIENTE':
         case 'EN CURSO':
         case 'NUEVO': 
             return 'warning'; // Amarillos
+        
         case 'CANCELADO':
             return 'danger'; // Rojo
+        
+        // 🌟 CORRECCIÓN ESLINT (no-fallthrough)
+        // eslint-disable-next-line no-fallthrough
         case 'VISITA COTIZADA':
-        // 🌟 CORRECCIÓN DE SINTAXIS: Eliminado 'LAGO'
         case 'VISITA AGENDADA':
             return 'info'; // Azules
+
+        // 🌟 CORRECCIÓN ESLINT (no-fallthrough)
+        // eslint-disable-next-line no-fallthrough
         case 'PRESUPUESTADO':
         case 'COTIZADO': 
         case 'COTIZADO (PV)':
