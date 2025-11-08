@@ -28,6 +28,7 @@ const getStatusVariant = (estado) => {
         case 'CANCELADO':
             return 'danger'; // Rojo
         case 'VISITA COTIZADA':
+        // 🌟 CORRECCIÓN DE SINTAXIS: Eliminado 'LAGO'
         case 'VISITA AGENDADA':
             return 'info'; // Azules
         case 'PRESUPUESTADO':
@@ -134,7 +135,8 @@ const Solicitudes = () => {
     // 🌟 LÓGICA DE GUARDADO (LLAMADA A LA API)
     const handleSaveClick = async (solicitud) => {
         // 'id' se usa para la UI, el resto para la API
-        const { id, sheetRowIndex, estado, monto_cotizado } = solicitud;
+        // 🌟 CORRECCIÓN: 'id' eliminado de la desestructuración (Advertencia)
+        const { sheetRowIndex, estado, monto_cotizado } = solicitud;
 
         try {
             // 🌟 LLAMADA A LA NUEVA RUTA DE API
