@@ -28,7 +28,6 @@ const getStatusVariant = (estado) => {
         case 'CANCELADO':
             return 'danger'; // Rojo
         case 'VISITA COTIZADA':
-        // 🌟 CORRECCIÓN DE SINTAXIS: Eliminado 'LAGO'
         case 'VISITA AGENDADA':
             return 'info'; // Azules
         case 'PRESUPUESTADO':
