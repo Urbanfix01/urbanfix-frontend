@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// ✅ Modal, ListGroup, y más iconos añadidos
-import { Container, Table, Button, Form, Alert, Spinner, Stack, Row, Col, Modal, ListGroup } from 'react-bootstrap'; 
-// ✅ Iconos para Refrescar, Editar, Cotizar, Ver y Eliminar
-import { ArrowClockwise, PencilFill, CurrencyDollar, EyeFill, TrashFill } from 'react-bootstrap-icons';
+// ✅ 'Card' FUE AÑADIDO DE NUEVO
+import { Container, Table, Button, Form, Alert, Spinner, Stack, Row, Col, Modal, ListGroup, Card } from 'react-bootstrap'; 
+// ✅ 'SaveFill' y 'XCircleFill' FUERON AÑADIDOS DE NUEVO
+import { ArrowClockwise, PencilFill, CurrencyDollar, EyeFill, TrashFill, SaveFill, XCircleFill } from 'react-bootstrap-icons';
 import { Link, useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -52,15 +52,15 @@ const Solicitudes = () => {
     const [editingRowId, setEditingRowId] = useState(null);
     const [originalRowData, setOriginalRowData] = useState(null);
 
-    // ✅ Estados para el Buscador y Filtro
+    // Estados para el Buscador y Filtro
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    // ✅ Estados para el Modal de Detalles
+    // Estados para el Modal de Detalles
     const [showModal, setShowModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
 
-    // ✅ Estados para el Modal de Eliminar
+    // Estados para el Modal de Eliminar
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [solicitudToDelete, setSolicitudToDelete] = useState(null);
 
@@ -95,7 +95,6 @@ const Solicitudes = () => {
 
         } catch (err) {
             console.error("Error al obtener solicitudes:", err);
-            // ✅ Mensaje de error genérico mejorado
             setError('Fallo al cargar datos del Backend. Por favor, asegúrate que el servicio de Render esté activo y revisa la consola para más detalles.');
         } finally {
             setLoading(false);
@@ -109,21 +108,38 @@ const Solicitudes = () => {
 
     // --- Lógica de Edición en Tabla ---
     const handleEstadoChange = (solicitudId, newStatus) => {
-// ... (código existente sin cambios) ...
+        setSolicitudes(currentSolicitudes =>
+            currentSolicitudes.map(sol =>
+                sol.id === solicitudId ? { ...sol, estado: newStatus } : sol
+            )
+        );
     };
+    
     const handleMontoChange = (solicitudId, newMonto) => {
-// ... (código existente sin cambios) ...
+        setSolicitudes(currentSolicitudes =>
+            currentSolicitudes.map(sol =>
+                sol.id === solicitudId ? { ...sol, monto_cotizado: newMonto } : sol
+            )
+        );
     };
+
     const handleEditClick = (solicitud) => {
-// ... (código existente sin cambios) ...
+        setEditingRowId(solicitud.id);
+        setOriginalRowData(solicitud); 
     };
+
     const handleCancelClick = (solicitudId) => {
-// ... (código existente sin cambios) ...
+        setSolicitudes(currentSolicitudes =>
+            currentSolicitudes.map(sol =>
+                sol.id === solicitudId ? originalRowData : sol
+            )
+        );
+        setEditingRowId(null); 
+        setOriginalRowData(null);
     };
 
     // --- Lógica de Guardado (API) ---
     const handleSaveClick = async (solicitud) => {
-// ... (código existente sin cambios) ...
         const { sheetRowIndex, estado, monto_cotizado } = solicitud;
 
         try {
@@ -131,20 +147,14 @@ const Solicitudes = () => {
                 sheetRowIndex: sheetRowIndex,
                 newStatus: estado, 
                 newMonto: monto_cotizado || '0',
-                // ✅ IMPORTANTE: El backend que usa este frontend DEBE soportar los 3 campos
-                // Si el backend es el antiguo (que solo acepta 2), esto fallará.
-                // Asumimos que el backend es el que SÍ soporta 'newPresupuesto'
                 newPresupuesto: solicitud.presupuesto || '' 
             });
             
             setEditingRowId(null); 
             setOriginalRowData(null);
             
-            // Opcional: Refrescar los datos después de guardar
-            // fetchSolicitudes(); 
-            
         } catch (error) {
-// ... (código existente sin cambios) ...
+            console.error("Error al actualizar el estado:", error);
             setError("Error al guardar el cambio en Google Sheets. La página se recargará para re-sincronizar.");
             setTimeout(() => window.location.reload(), 2000); 
         }
@@ -152,7 +162,6 @@ const Solicitudes = () => {
 
     // --- Lógica de Navegación ---
     const handleCotizarClick = (solicitud) => {
-        // Navega a la ruta de cotización y pasa el objeto 'solicitud'
         navigate(`/cotizar/${solicitud.id}`, { state: { solicitud } });
     };
 
@@ -166,7 +175,7 @@ const Solicitudes = () => {
         setSelectedSolicitud(null);
     };
 
-    // ✅ --- Lógica del Modal de Eliminar ---
+    // --- Lógica del Modal de Eliminar ---
     const handleShowDeleteModal = (solicitud) => {
         setSolicitudToDelete(solicitud);
         setShowDeleteModal(true);
@@ -178,21 +187,18 @@ const Solicitudes = () => {
     const handleConfirmDelete = async () => {
         if (!solicitudToDelete) return;
 
-        setLoading(true); // Usamos el spinner global
+        setLoading(true); 
         setError(null);
 
         try {
-            // Llama a la nueva API de DELETE en el backend
             await axios.delete(`${API_BASE_URL}/api/eliminar-solicitud`, {
-                // Axios 'delete' envía el body de forma diferente
                 data: { sheetRowIndex: solicitudToDelete.sheetRowIndex }
             });
 
-            // Si tiene éxito, quita la solicitud de la lista local (UI)
             setSolicitudes(prevSolicitudes => 
                 prevSolicitudes.filter(s => s.id !== solicitudToDelete.id)
             );
-            handleCloseDeleteModal(); // Cierra el modal
+            handleCloseDeleteModal(); 
 
         } catch (err) {
             console.error("Error al eliminar la solicitud:", err);
@@ -219,7 +225,7 @@ const Solicitudes = () => {
     });
 
     return (
-        <Container fluid className="mt-5 mb-5"> {/* 'fluid' para más espacio */}
+        <Container fluid className="mt-5 mb-5"> 
             
             {/* --- Título y Botones --- */}
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -373,7 +379,7 @@ const Solicitudes = () => {
                                                     size="sm" 
                                                     onClick={() => handleSaveClick(solicitud)}
                                                     title="Guardar"
-                                                    disabled={loading} // Deshabilitar si se está guardando
+                                                    disabled={loading} 
                                                 >
                                                     <SaveFill />
                                                 </Button>
@@ -413,7 +419,6 @@ const Solicitudes = () => {
                                                 >
                                                     <EyeFill />
                                                 </Button>
-                                                {/* ✅ BOTÓN ELIMINAR AÑADIDO */}
                                                 <Button
                                                     variant="outline-danger"
                                                     size="sm"
@@ -476,7 +481,7 @@ const Solicitudes = () => {
                 </Modal>
             )}
 
-            {/* ✅ --- MODAL DE CONFIRMACIÓN DE ELIMINAR --- */}
+            {/* --- MODAL DE CONFIRMACIÓN DE ELIMINAR --- */}
             {solicitudToDelete && (
                 <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
                     <Modal.Header closeButton>
