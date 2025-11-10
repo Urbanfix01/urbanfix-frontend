@@ -1,4 +1,4 @@
-// src/components/Login.js
+// src/components/login.js
 
 import React, { useRef, useState } from 'react';
 import { auth } from '../firebase'; 
