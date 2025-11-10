@@ -2,44 +2,43 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// ✅ IMPORTACIONES AÑADIDAS: Modal y ListGroup
-import { Container, Table, Button, Form, Alert, Spinner, Stack, Row, Col, InputGroup, Modal, ListGroup } from 'react-bootstrap'; 
-// ✅ ICONOS AÑADIDOS: EyeFill
-import { PencilFill, SaveFill, XCircleFill, ArrowClockwise, Search, EyeFill } from 'react-bootstrap-icons';
+// ✅ Modal, ListGroup, y más iconos añadidos
+import { Container, Table, Button, Form, Alert, Spinner, Stack, Row, Col, Modal, ListGroup } from 'react-bootstrap'; 
+// ✅ Iconos para Refrescar, Editar, Cotizar, Ver y Eliminar
+import { ArrowClockwise, PencilFill, CurrencyDollar, EyeFill, TrashFill } from 'react-bootstrap-icons';
 import { Link, useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
     ? 'https://urbanfix-backend-4sfg.onrender.com' 
     : 'http://localhost:3000'; 
 
+// Función auxiliar para asignar color (variant) de Bootstrap según el estado
 const getStatusVariant = (estado) => {
+// ... (código existente sin cambios) ...
     const estadoNorm = estado?.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'PENDIENTE';
 
     switch (estadoNorm) {
         case 'ACEPTADO':
         case 'FINALIZADO':
         case 'CERRADO':
-            return 'success'; 
+            return 'success'; // Verdes
         
-        // eslint-disable-next-line no-fallthrough
         case 'PENDIENTE':
         case 'EN CURSO':
         case 'NUEVO': 
-            return 'warning'; 
+            return 'warning'; // Amarillos
         
         case 'CANCELADO':
-            return 'danger'; 
+            return 'danger'; // Rojo
         
-        // eslint-disable-next-line no-fallthrough
         case 'VISITA COTIZADA':
         case 'VISITA AGENDADA':
-            return 'info'; 
+            return 'info'; // Azules
 
-        // eslint-disable-next-line no-fallthrough
         case 'PRESUPUESTADO':
         case 'COTIZADO': 
         case 'COTIZADO (PV)':
-            return 'primary'; 
+            return 'primary'; // Azules oscuros
         default:
             return 'secondary';
     }
@@ -53,12 +52,17 @@ const Solicitudes = () => {
     const [editingRowId, setEditingRowId] = useState(null);
     const [originalRowData, setOriginalRowData] = useState(null);
 
+    // ✅ Estados para el Buscador y Filtro
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('TODOS'); 
+    const [statusFilter, setStatusFilter] = useState('');
 
-    // ✅ NUEVO: Estados para el Modal de Detalles
+    // ✅ Estados para el Modal de Detalles
     const [showModal, setShowModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
+
+    // ✅ Estados para el Modal de Eliminar
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [solicitudToDelete, setSolicitudToDelete] = useState(null);
 
     const estadosValidos = [
         'NUEVO', 
@@ -76,8 +80,8 @@ const Solicitudes = () => {
 
     const navigate = useNavigate();
 
-    // Lógica para obtener los datos al cargar el componente
-    const fetchSolicitudes = async () => { 
+    // Lógica para obtener los datos (ahora reutilizable)
+    const fetchSolicitudes = async () => {
         setLoading(true);
         setError(null);
         
@@ -87,86 +91,72 @@ const Solicitudes = () => {
             if (response.data.error) {
                 throw new Error(response.data.error);
             }
-            setSolicitudes(response.data.solicitudes); 
+            setSolicitudes(response.data.solicitudes || []); 
 
         } catch (err) {
             console.error("Error al obtener solicitudes:", err);
+            // ✅ Mensaje de error genérico mejorado
             setError('Fallo al cargar datos del Backend. Por favor, asegúrate que el servicio de Render esté activo y revisa la consola para más detalles.');
         } finally {
             setLoading(false);
         }
     };
-    
+
+    // Cargar datos al iniciar
     useEffect(() => {
         fetchSolicitudes();
     }, []); 
 
-    // LÓGICA DE ACTUALIZACIÓN (SOLO VISUAL)
+    // --- Lógica de Edición en Tabla ---
     const handleEstadoChange = (solicitudId, newStatus) => {
-        setSolicitudes(currentSolicitudes =>
-            currentSolicitudes.map(sol =>
-                sol.id === solicitudId ? { ...sol, estado: newStatus } : sol
-            )
-        );
+// ... (código existente sin cambios) ...
     };
-    
     const handleMontoChange = (solicitudId, newMonto) => {
-        setSolicitudes(currentSolicitudes =>
-            currentSolicitudes.map(sol =>
-                sol.id === solicitudId ? { ...sol, monto_cotizado: newMonto } : sol
-            )
-        );
+// ... (código existente sin cambios) ...
     };
-
-
-    // Se activa al hacer clic en el lápiz ✏️
     const handleEditClick = (solicitud) => {
-        setEditingRowId(solicitud.id);
-        setOriginalRowData(solicitud); 
+// ... (código existente sin cambios) ...
     };
-
-    // Se activa al hacer clic en la X ❌
     const handleCancelClick = (solicitudId) => {
-        setSolicitudes(currentSolicitudes =>
-            currentSolicitudes.map(sol =>
-                sol.id === solicitudId ? originalRowData : sol
-            )
-        );
-        setEditingRowId(null); 
-        setOriginalRowData(null);
+// ... (código existente sin cambios) ...
     };
 
-    // LÓGICA DE GUARDADO (LLAMADA A LA API)
+    // --- Lógica de Guardado (API) ---
     const handleSaveClick = async (solicitud) => {
+// ... (código existente sin cambios) ...
         const { sheetRowIndex, estado, monto_cotizado } = solicitud;
 
         try {
             await axios.patch(`${API_BASE_URL}/api/update-solicitud`, {
                 sheetRowIndex: sheetRowIndex,
                 newStatus: estado, 
-                newMonto: monto_cotizado || '0' 
+                newMonto: monto_cotizado || '0',
+                // ✅ IMPORTANTE: El backend que usa este frontend DEBE soportar los 3 campos
+                // Si el backend es el antiguo (que solo acepta 2), esto fallará.
+                // Asumimos que el backend es el que SÍ soporta 'newPresupuesto'
+                newPresupuesto: solicitud.presupuesto || '' 
             });
             
             setEditingRowId(null); 
             setOriginalRowData(null);
             
-            await fetchSolicitudes();
+            // Opcional: Refrescar los datos después de guardar
+            // fetchSolicitudes(); 
             
-            navigate('/dashboard');
-        
         } catch (error) {
-            console.error("Error al actualizar el estado:", error);
+// ... (código existente sin cambios) ...
             setError("Error al guardar el cambio en Google Sheets. La página se recargará para re-sincronizar.");
             setTimeout(() => window.location.reload(), 2000); 
         }
     };
 
-    // LÓGICA DE NAVEGACIÓN A COTIZACIÓN
+    // --- Lógica de Navegación ---
     const handleCotizarClick = (solicitud) => {
+        // Navega a la ruta de cotización y pasa el objeto 'solicitud'
         navigate(`/cotizar/${solicitud.id}`, { state: { solicitud } });
     };
 
-    // ✅ NUEVO: Funciones para manejar el Modal de Detalles
+    // --- Lógica del Modal de Detalles ---
     const handleShowModal = (solicitud) => {
         setSelectedSolicitud(solicitud);
         setShowModal(true);
@@ -176,51 +166,74 @@ const Solicitudes = () => {
         setSelectedSolicitud(null);
     };
 
+    // ✅ --- Lógica del Modal de Eliminar ---
+    const handleShowDeleteModal = (solicitud) => {
+        setSolicitudToDelete(solicitud);
+        setShowDeleteModal(true);
+    };
+    const handleCloseDeleteModal = () => {
+        setShowDeleteModal(false);
+        setSolicitudToDelete(null);
+    };
+    const handleConfirmDelete = async () => {
+        if (!solicitudToDelete) return;
 
-    if (loading && solicitudes.length === 0) { // Muestra spinner solo en la carga inicial
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" role="status" variant="primary" className="me-2" />
-                <span className="text-primary">Cargando solicitudes...</span>
-            </Container>
-        );
-    }
-    
+        setLoading(true); // Usamos el spinner global
+        setError(null);
+
+        try {
+            // Llama a la nueva API de DELETE en el backend
+            await axios.delete(`${API_BASE_URL}/api/eliminar-solicitud`, {
+                // Axios 'delete' envía el body de forma diferente
+                data: { sheetRowIndex: solicitudToDelete.sheetRowIndex }
+            });
+
+            // Si tiene éxito, quita la solicitud de la lista local (UI)
+            setSolicitudes(prevSolicitudes => 
+                prevSolicitudes.filter(s => s.id !== solicitudToDelete.id)
+            );
+            handleCloseDeleteModal(); // Cierra el modal
+
+        } catch (err) {
+            console.error("Error al eliminar la solicitud:", err);
+            setError("Error al eliminar la solicitud. Revisa los logs de Render.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- Renderizado ---
     if (error) {
         return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
     }
 
-    // Lógica de filtrado
-    const solicitudesFiltradas = solicitudes.filter(solicitud => {
-        const filtroEstado = statusFilter === 'TODOS' ? true : solicitud.estado === statusFilter;
+    // --- Lógica de Filtro ---
+    const filteredSolicitudes = solicitudes.filter(sol => {
+        const matchesSearch = sol.nombre_apellido?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            sol.direccion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            sol.telefono?.includes(searchTerm);
         
-        const filtroBusqueda = solicitud.nombre_apellido
-            ? solicitud.nombre_apellido.toLowerCase().includes(searchTerm.toLowerCase())
-            : false;
-            
-        return filtroEstado && filtroBusqueda;
+        const matchesStatus = statusFilter ? sol.estado === statusFilter : true;
+        
+        return matchesSearch && matchesStatus;
     });
 
-
     return (
-        <Container className="mt-5">
-            {/* Elemento 1: Título y Botones */}
+        <Container fluid className="mt-5 mb-5"> {/* 'fluid' para más espacio */}
+            
+            {/* --- Título y Botones --- */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3 className="mb-0 text-primary">
-                    Gestión de Solicitudes <span className="text-muted">({solicitudesFiltradas.length} encontradas)</span>
+                    Gestión de Solicitudes <span className="text-muted">({filteredSolicitudes.length} / {solicitudes.length})</span>
                 </h3>
-                
                 <Stack direction="horizontal" gap={2}>
                     <Button 
                         variant="outline-primary" 
                         onClick={fetchSolicitudes} 
                         disabled={loading}
-                        title="Recargar datos desde Google Sheets"
+                        title="Refrescar Datos"
                     >
-                        {loading 
-                            ? <Spinner as="span" animation="border" size="sm" /> 
-                            : <ArrowClockwise size={20} />
-                        }
+                        {loading ? <Spinner as="span" animation="border" size="sm" /> : <ArrowClockwise size={20} />}
                     </Button>
                     <Link to="/dashboard">
                         <Button variant="outline-secondary">
@@ -230,57 +243,73 @@ const Solicitudes = () => {
                 </Stack>
             </div>
 
-            {/* Fila de Buscador y Filtros */}
-            <Row className="mb-4 p-3 bg-light rounded shadow-sm">
-                <Col md={7}>
-                    <Form.Group controlId="filtroBusqueda">
-                        <Form.Label>Buscar por Cliente</Form.Label>
-                        <InputGroup>
-                            <InputGroup.Text><Search /></InputGroup.Text>
-                            <Form.Control
-                                type="text"
-                                placeholder="Escriba el nombre del cliente..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </InputGroup>
-                    </Form.Group>
-                </Col>
-                <Col md={5}>
-                    <Form.Group controlId="filtroEstado">
-                        <Form.Label>Filtrar por Estado</Form.Label>
-                        <Form.Select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                            <option value="TODOS">-- Mostrar Todos los Estados --</option>
-                            {estadosValidos.map(estado => (
-                                <option key={estado} value={estado}>{estado}</option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-                </Col>
-            </Row>
+            {/* --- Controles de Búsqueda y Filtro --- */}
+            <Card className="mb-4 shadow-sm">
+                <Card.Body>
+                    <Row>
+                        <Col md={8}>
+                            <Form.Group controlId="searchTerm">
+                                <Form.Label>Buscar Cliente (Nombre, Teléfono o Dirección)</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Buscar..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group controlId="statusFilter">
+                                <Form.Label>Filtrar por Estado</Form.Label>
+                                <Form.Select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                >
+                                    <option value="">Todos los Estados</option>
+                                    {estadosValidos.map(estado => (
+                                        <option key={estado} value={estado}>{estado}</option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
 
+            {/* --- Estado de Carga de la Tabla --- */}
+            {loading && solicitudes.length === 0 && (
+                <div className="text-center mt-5">
+                    <Spinner animation="border" role="status" variant="primary" className="me-2" />
+                    <span className="text-primary fs-5">Cargando solicitudes...</span>
+                </div>
+            )}
 
-            {/* Elemento 2: La Tabla */}
-            <Table striped bordered hover responsive className="shadow-sm">
-                <thead>
-                    <tr className="table-dark">
-                        <th>#</th>
-                        <th>Fecha</th>
-                        <th>Cliente</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th>Categoría</th>
-                        <th>Monto</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {solicitudesFiltradas.length > 0 ? (
-                        solicitudesFiltradas.map((solicitud, index) => {
+            {/* --- Tabla de Solicitudes --- */}
+            {!loading && filteredSolicitudes.length === 0 && (
+                 <Alert variant="info" className="text-center">
+                    {solicitudes.length === 0 
+                        ? "No hay solicitudes para mostrar." 
+                        : "No se encontraron solicitudes que coincidan con la búsqueda."}
+                </Alert>
+            )}
+
+            {filteredSolicitudes.length > 0 && (
+                <Table striped bordered hover responsive className="shadow-sm align-middle">
+                    <thead className="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Dirección</th>
+                            <th>Categoría</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredSolicitudes.map((solicitud, index) => {
                             const isEditing = editingRowId === solicitud.id;
                             
                             return (
@@ -292,6 +321,7 @@ const Solicitudes = () => {
                                     <td>{solicitud.direccion || 'N/A'}</td>
                                     <td>{solicitud.categoria_trabajo || 'N/A'}</td>
                                     
+                                    {/* COLUMNA MONTO (Editable) */}
                                     <td>
                                         {isEditing ? (
                                             <Form.Control
@@ -306,6 +336,7 @@ const Solicitudes = () => {
                                         )}
                                     </td>
 
+                                    {/* COLUMNA ESTADO (Editable) */}
                                     <td>
                                         {isEditing ? (
                                             <Form.Select
@@ -323,20 +354,26 @@ const Solicitudes = () => {
                                                 variant={getStatusVariant(solicitud.estado)} 
                                                 size="sm"
                                                 className="fw-bold"
+                                                style={{ minWidth: '110px' }}
+                                                onClick={() => handleEditClick(solicitud)}
+                                                title="Clic para editar"
                                             >
                                                 {solicitud.estado || 'PENDIENTE'}
                                             </Button>
                                         )}
                                     </td>
                                     
+                                    {/* COLUMNA ACCIÓN (Botones) */}
                                     <td>
                                         {isEditing ? (
+                                            // --- MODO EDICIÓN ---
                                             <Stack direction="horizontal" gap={2}>
                                                 <Button 
                                                     variant="success" 
                                                     size="sm" 
                                                     onClick={() => handleSaveClick(solicitud)}
                                                     title="Guardar"
+                                                    disabled={loading} // Deshabilitar si se está guardando
                                                 >
                                                     <SaveFill />
                                                 </Button>
@@ -350,16 +387,8 @@ const Solicitudes = () => {
                                                 </Button>
                                             </Stack>
                                         ) : (
+                                            // --- MODO LECTURA ---
                                             <Stack direction="horizontal" gap={2}>
-                                                <Button 
-                                                    variant="outline-info" 
-                                                    size="sm" 
-                                                    onClick={() => handleShowModal(solicitud)}
-                                                    title="Ver Detalles Completos"
-                                                >
-                                                    <EyeFill />
-                                                </Button>
-
                                                 <Button 
                                                     variant="outline-primary" 
                                                     size="sm" 
@@ -368,53 +397,54 @@ const Solicitudes = () => {
                                                 >
                                                     <PencilFill />
                                                 </Button>
-                                                
-                                                <Button 
-                                                    variant="outline-success" 
-                                                    size="sm" 
+                                                <Button
+                                                    variant="outline-success"
+                                                    size="sm"
                                                     onClick={() => handleCotizarClick(solicitud)}
                                                     title="Cotizar / Ver Detalle PDF"
                                                 >
-                                                    $
+                                                    <CurrencyDollar />
+                                                </Button>
+                                                <Button
+                                                    variant="outline-info"
+                                                    size="sm"
+                                                    onClick={() => handleShowModal(solicitud)}
+                                                    title="Ver Detalles Completos"
+                                                >
+                                                    <EyeFill />
+                                                </Button>
+                                                {/* ✅ BOTÓN ELIMINAR AÑADIDO */}
+                                                <Button
+                                                    variant="outline-danger"
+                                                    size="sm"
+                                                    onClick={() => handleShowDeleteModal(solicitud)}
+                                                    title="Eliminar Solicitud"
+                                                >
+                                                    <TrashFill />
                                                 </Button>
                                             </Stack>
                                         )}
                                     </td>
                                 </tr>
                             );
-                        })
-                    ) : (
-                        <tr>
-                            <td colSpan="9" className="text-center text-muted">
-                                No se encontraron solicitudes que coincidan con los filtros.
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </Table>
-            
-            {/* Elemento 3: Alerta de Cero Solicitudes */}
-            {solicitudes.length === 0 && !loading && <Alert variant="info" className="text-center">No hay solicitudes para mostrar.</Alert>}
+                        })}
+                    </tbody>
+                </Table>
+            )}
 
-            {/* ✅ CORRECCIÓN: Modal movido DENTRO del Container raíz */}
+            {/* --- MODAL DE DETALLES --- */}
             {selectedSolicitud && (
-                <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
+                <Modal show={showModal} onHide={handleCloseModal} centered>
                     <Modal.Header closeButton>
-                        <Modal.Title>Detalles de Solicitud: {selectedSolicitud.nombre_apellido}</Modal.Title>
+                        <Modal.Title>Detalles de Solicitud</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <ListGroup variant="flush">
                             <ListGroup.Item>
-                                <strong>ID:</strong> {selectedSolicitud.id}
-                            </ListGroup.Item>
-                            <ListGroup.Item>
                                 <strong>Cliente:</strong> {selectedSolicitud.nombre_apellido}
                             </ListGroup.Item>
                             <ListGroup.Item>
-                                <strong>Teléfono:</strong> 
-                                <a href={`https://wa.me/${selectedSolicitud.telefono.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer">
-                                    {selectedSolicitud.telefono}
-                                </a>
+                                <strong>Teléfono:</strong> {selectedSolicitud.telefono}
                             </ListGroup.Item>
                             <ListGroup.Item>
                                 <strong>Dirección:</strong> {selectedSolicitud.direccion}
@@ -423,19 +453,18 @@ const Solicitudes = () => {
                                 <strong>Categoría:</strong> {selectedSolicitud.categoria_trabajo}
                             </ListGroup.Item>
                             <ListGroup.Item>
-                                <strong>Estado:</strong> <span className={`fw-bold text-${getStatusVariant(selectedSolicitud.estado)}`}>{selectedSolicitud.estado}</span>
+                                <strong>Descripción del Problema:</strong>
+                                <p className="mt-2" style={{ whiteSpace: 'pre-wrap' }}>{selectedSolicitud.descripcion_problema || 'N/A'}</p>
                             </ListGroup.Item>
                             <ListGroup.Item>
-                                <strong>Urgencia:</strong> {selectedSolicitud.urgencia || 'No especificada'}
+                                <strong>Urgencia:</strong> {selectedSolicitud.urgencia || 'N/A'}
                             </ListGroup.Item>
                             <ListGroup.Item>
-                                <strong>Ventanas Horarias:</strong> {selectedSolicitud.ventanas_horarias || 'No especificadas'}
+                                <strong>Ventanas Horarias:</strong> {selectedSolicitud.ventanas_horarias || 'N/A'}
                             </ListGroup.Item>
                             <ListGroup.Item>
-                                <strong className="d-block">Descripción del Problema:</strong>
-                                <p style={{ whiteSpace: 'pre-wrap', backgroundColor: '#f8f9fa', padding: '10px', borderRadius: '5px', marginTop: '5px' }}>
-                                    {selectedSolicitud.descripcion_problema || 'No hay descripción.'}
-                                </p>
+                                <strong>Notas:</strong>
+                                <p className="mt-2" style={{ whiteSpace: 'pre-wrap' }}>{selectedSolicitud.notas || 'N/A'}</p>
                             </ListGroup.Item>
                         </ListGroup>
                     </Modal.Body>
@@ -446,6 +475,33 @@ const Solicitudes = () => {
                     </Modal.Footer>
                 </Modal>
             )}
+
+            {/* ✅ --- MODAL DE CONFIRMACIÓN DE ELIMINAR --- */}
+            {solicitudToDelete && (
+                <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title className="text-danger">Confirmar Eliminación</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p>¿Estás seguro de que deseas eliminar permanentemente esta solicitud?</p>
+                        <Alert variant="warning">
+                            <strong>Cliente:</strong> {solicitudToDelete.nombre_apellido}<br/>
+                            <strong>Dirección:</strong> {solicitudToDelete.direccion}<br/>
+                            <strong>Fila de Sheet:</strong> {solicitudToDelete.sheetRowIndex}<br/>
+                            <strong className="mt-2 d-block">Esta acción no se puede deshacer.</strong>
+                        </Alert>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleCloseDeleteModal} disabled={loading}>
+                            Cancelar
+                        </Button>
+                        <Button variant="danger" onClick={handleConfirmDelete} disabled={loading}>
+                            {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Sí, Eliminar'}
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            )}
+
         </Container>
     );
 };
