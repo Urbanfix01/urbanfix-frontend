@@ -243,7 +243,7 @@ const SolicitudForm = () => {
                                         <Button variant="outline-secondary" className="w-100">
                                             Volver al Login de Administrador
                                         </Button>
-                                    </al-icon>
+                                    </Link>
                                 </div>
                             </Form>
                         </Card.Body>
