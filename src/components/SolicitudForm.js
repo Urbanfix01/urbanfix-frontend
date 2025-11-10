@@ -1,256 +1,275 @@
-// src/components/SolicitudForm.js
+// urbanfix-backend/server.js
 
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Container, Row, Col, Form, Button, Card, Alert, Spinner, Stack } from 'react-bootstrap'; 
-import { Link } from 'react-router-dom';
+const express = require('express');
+const cors = require('cors');
+const { google } = require('googleapis');
+// Importa las credenciales de la cuenta de servicio (asegúrate que este archivo está lleno)
+const credentials = require('./credentials.json'); 
 
-// Usamos la misma lógica de URL (Producción o Local)
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://urbanfix-backend-4sfg.onrender.com' // <-- ¡Tu URL pública!
-    : 'http://localhost:3000';
+const app = express();
+// 🌟 Usar el puerto del hosting (Render) o 3000 si es local
+const PORT = process.env.PORT || 3000; 
 
-const SolicitudForm = () => {
-    // 🌟 ESTADOS AMPLIADOS PARA INCLUIR URGENCIA Y VENTANAS
-    const [formData, setFormData] = useState({
-        nombre_apellido: '',
-        telefono: '',
-        direccion: '',
-        categoria_trabajo: '',
-        descripcion_problema: '',
-        // Asignamos la primera opción como valor por defecto para el radio button
-        urgencia: 'Normal: Es un arreglo, pero no hay apuro.', 
-        ventanas_horarias: [] // Array para checkboxes
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
+// 🚨 VARIABLES CRÍTICAS (SINCRONIZADAS) 🚨
+const SPREADSHEET_ID = '1cWAvN_DOG5U1vr-jg2_5YD19W1Vrt6CJxYRvTHCmtOs'; 
+// 🌟 SINCRONIZACIÓN 1: El rango ahora empieza en A4 (Encabezados) y va hasta la O (Pago Recibido)
+const SHEET_RANGE = 'Respuestas de formulario 1!A4:O'; 
 
-    // Opciones del Formulario (Basado en tus capturas)
-    const categorias = ['Plomería', 'Electricidad', 'Gas y termotanques (Calefones, estufas)', 'Aire Acondicionado (Instalación / Mantenimiento)', 'Cerrajería (Urgencias / Cambios)', 'Pintura', 'Albañilería (Arreglos menores, Durlock, etc.)', 'Carpintería / Herrería', 'Electrodomésticos (Lavarropas, heladeras, etc.)', 'Jardinería / Limpieza técnica', 'Otro'];
-    
-    const opcionesUrgencia = [
-        'Normal: Es un arreglo, pero no hay apuro.', 
-        'Moderado: Necesito resolverlo pronto. (Próximas 48hs)', 
-        'Urgente: ¡Es una emergencia! (Necesito solución hoy. Entiendo que puede tener recargo)'
-    ];
+// 🌟 CAMBIO FINAL: Configuración de CORS para producción
+const allowedOrigins = [
+    'http://localhost:3000', 
+    'http://localhost:3001',
+    'http://localhost:5173',
+    // 🌟 AÑADIDA TU URL DE VERCEL (FRONTEND PÚBLICO)
+    'https://urbanfix-frontend.vercel.app',
+    'https://urbanfix-frontend-kfv4.vercel.app', // <-- Tu URL pública
+    'https://urbanfix-frontend-p1dfdw0j4-urbanfix01s-projects.vercel.app' // <-- La URL "Deployment"
+];
 
-    const opcionesVentanas = [
-        'Lunes a Viernes (Mañana 9-13hs)',
-        'Lunes a Viernes (Tarde 14-18hs)',
-        'Sábado (Mañana 9-13hs)',
-        'A coordinar (Tengo horarios rotativos)',
-        'Lo antes posible (Solo para urgencias)'
-    ];
+app.use(cors({
+    origin: function (origin, callback) {
+        // Permite apps sin origen (como Postman) O las que están en la lista
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS no permitido para este origen'));
+        }
+    }
+})); 
+app.use(express.json());
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: value
-        }));
-    };
+// ---------------------------------------------
+// Configuración de Autenticación de Google Sheets
+// ---------------------------------------------
+const auth = new google.auth.GoogleAuth({
+    credentials,
+    // 🌟 PERMISO DE LECTURA Y ESCRITURA
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'], 
+});
+const sheets = google.sheets({ version: 'v4', auth });
 
-    // 🌟 NUEVO: Manejador para Checkboxes de Ventanas Horarias
-    const handleCheckboxChange = (e) => {
-        const { value, checked } = e.target;
-        setFormData(prevData => {
-            const currentVentanas = prevData.ventanas_horarias;
-            if (checked) {
-                // Añadir la opción si está marcada
-                return { ...prevData, ventanas_horarias: [...currentVentanas, value] };
-            } else {
-                // Quitar la opción si está desmarcada
-                return { ...prevData, ventanas_horarias: currentVentanas.filter(v => v !== value) };
+// ---------------------------------------------
+// RUTA API: Obtener Solicitudes de Google Sheets
+// ---------------------------------------------
+app.get('/api/solicitudes-sheet', async (req, res) => {
+    try {
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: SHEET_RANGE,
+        });
+
+        const sheetRows = response.data.values || [];
+        
+        if (sheetRows.length > 0) { 
+             // Fila 4 (índice 0 de sheetRows) son los encabezados
+             const headers = sheetRows[0].map(h => 
+                h.toLowerCase()
+                 .replace(/\s+/g, '_')
+                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                 .replace(/[^a-z0-9_]/g, '')
+             );
+             
+             // Fila 5 en adelante (índice 1+) son los datos
+             const data = sheetRows.slice(1).map((row, rowIndex) => {
+                 let obj = {
+                     id: `sheet-${rowIndex + 1}`,
+                     // 🌟 SINCRONIZACIÓN 2: El índice real de la fila en Sheets es (rowIndex + 5)
+                     // (rowIndex 0 es la Fila 5, rowIndex 1 es la Fila 6)
+                     sheetRowIndex: rowIndex + 5, 
+                 };
+                 headers.forEach((header, index) => {
+                     obj[header] = row[index] !== undefined ? row[index] : ''; 
+                 });
+                 return obj;
+             });
+
+             return res.status(200).json({ solicitudes: data });
+        }
+
+        return res.status(200).json({ solicitudes: [] });
+
+    } catch (error) {
+        console.error('--- ERROR DETECTADO (Solicitudes Sheet) ---');
+        console.error(error); 
+        console.error('-----------------------');
+        return res.status(500).json({ error: 'Fallo de conexión o permisos: Revisa si compartiste la Hoja y que el nombre de la pestaña sea correcto.' });
+    }
+});
+
+// ---------------------------------------------
+// RUTA API: Resumen para el Dashboard
+// ---------------------------------------------
+app.get('/api/dashboard-summary', async (req, res) => {
+    try {
+        // 1. Obtener los datos (misma lógica que la ruta de solicitudes)
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: SHEET_RANGE, // Usa el mismo rango A4:O
+        });
+        const sheetRows = response.data.values || [];
+        let solicitudesData = []; 
+
+        if (sheetRows.length > 1) {
+             const headers = sheetRows[0].map(h => 
+                 h.toLowerCase()
+                 .replace(/\s+/g, '_')
+                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                 .replace(/[^a-z0-9_]/g, '')
+             );
+             
+             solicitudesData = sheetRows.slice(1).map((row) => {
+                 let obj = {};
+                 headers.forEach((header, index) => {
+                     obj[header] = row[index] !== undefined ? row[index] : ''; 
+                 });
+                 return obj;
+             });
+        
+
+            // 2. Calcular las estadísticas
+            const normalizeState = (estado) => (estado?.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'PENDIENTE');
+            
+            let total = solicitudesData.length;
+            let pendientes = 0;
+            let finalizadas = 0;
+
+            solicitudesData.forEach(solicitud => {
+                const estado = normalizeState(solicitud.estado); 
+                
+                if (estado === 'PENDIENTE' || estado === 'NUEVO' || estado === 'COTIZADO' || estado === 'EN PROCESO' || estado === 'ACEPTADO' || estado === 'VISITA COTIZADA' || estado === 'VISITA AGENDADA' || estado === 'COTIZADO (PV)') {
+                    pendientes++;
+                } else if (estado === 'FINALIZADO' || estado === 'CERRADO') { 
+                    finalizadas++;
+                }
+            });
+
+            // 3. Devolver el resumen
+            return res.status(200).json({
+                total: total,
+                pendientes: pendientes,
+                finalizadas: finalizadas
+            });
+        
+        } else {
+             return res.status(200).json({ total: 0, pendientes: 0, finalizadas: 0 });
+        }
+
+    } catch (error) {
+        console.error('--- ERROR DETECTADO (Dashboard Summary) ---');
+        console.error(error); 
+        console.error('-----------------------');
+        return res.status(500).json({ error: 'Fallo al calcular el resumen.' });
+    }
+});
+
+// ---------------------------------------------
+// RUTA 'PATCH': Actualizar Estado y Monto (Sincronizada)
+// ---------------------------------------------
+app.patch('/api/update-solicitud', async (req, res) => {
+    // 1. Obtenemos los 3 valores del Frontend
+    const { sheetRowIndex, newStatus, newMonto } = req.body;
+
+    // 🌟 2. Definimos las columnas (basado en image_a1e304.png)
+    const ESTADO_COLUMN = 'J';  // <--- ¡CORREGIDO! (Estado es J)
+    const MONTO_COLUMN = 'L'; // 'MONTO_COTIZADO'
+    const SHEET_NAME = 'Respuestas de formulario 1';
+
+    console.log(`Intentando actualizar Fila: ${sheetRowIndex}. Estado (Col J): ${newStatus}, Monto (Col L): ${newMonto}`);
+
+    try {
+        // 3. Usamos batchUpdate para múltiples celdas
+        await sheets.spreadsheets.values.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            resource: {
+                valueInputOption: 'USER_ENTERED',
+                data: [
+                    {
+                        // Paquete 1: Actualizar el ESTADO
+                        range: `${SHEET_NAME}!${ESTADO_COLUMN}${sheetRowIndex}`,
+                        values: [[newStatus]],
+                    },
+                    {
+                        // Paquete 2: Actualizar el MONTO
+                        range: `${SHEET_NAME}!${MONTO_COLUMN}${sheetRowIndex}`,
+                        values: [[newMonto]],
+                    }
+                ]
             }
         });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(null);
-
-        // 🌟 PREPARAR DATOS PARA LA API: Convertir el array de ventanas a un string CSV
-        const dataToSend = {
-            ...formData,
-            ventanas_horarias: formData.ventanas_horarias.join(', ') // String separado por comas
-        };
-
-        try {
-            // 1. Llamamos a la nueva ruta POST en el Backend
-            const response = await axios.post(`${API_BASE_URL}/api/crear-solicitud`, dataToSend);
-
-            if (response.data.success) {
-                setSuccess('¡Solicitud enviada con éxito! Nos pondremos en contacto a la brevedad.');
-                // 2. Limpiamos el formulario (restaurando los valores por defecto)
-                setFormData({
-                    nombre_apellido: '',
-                    telefono: '',
-                    direccion: '',
-                    categoria_trabajo: '',
-                    descripcion_problema: '',
-                    urgencia: opcionesUrgencia[0],
-                    ventanas_horarias: []
-                });
-            } else {
-                throw new Error('Error al enviar la solicitud.');
-            }
         
-        } catch (err) {
-            console.error("Error al crear la solicitud:", err);
-            setError('Error al enviar la solicitud. Por favor, intente más tarde.');
-        } finally {
-            setLoading(false);
-        }
-    };
+        res.status(200).json({ success: true, message: `Fila ${sheetRowIndex} actualizada.` });
+    
+    } catch (error) {
+        console.error('--- ERROR DETECTADO (Update Solicitud) ---');
+        console.error(error);
+        console.error('-----------------------');
+        res.status(500).json({ error: 'No se pudo actualizar la Hoja de Google. ¿Tienes permisos de "Editor"?' });
+    }
+});
 
-    return (
-        <Container className="mt-5">
-            <Row className="justify-content-center">
-                <Col md={10} lg={8}>
-                    <Card className="shadow-lg p-4">
-                        <Card.Body>
-                            <h2 className="text-center mb-4 text-primary">Solicitar Presupuesto</h2>
-                            <p className="text-center text-muted mb-4">
-                                Complete el formulario y nos pondremos en contacto para coordinar una visita o enviarle una cotización.
-                            </p>
-                            
-                            {/* Mensajes de Éxito o Error */}
-                            {success && <Alert variant="success">{success}</Alert>}
-                            {error && <Alert variant="danger">{error}</Alert>}
+// ---------------------------------------------
+// NUEVA RUTA 'POST': Crear Nueva Solicitud (Implementada)
+// ---------------------------------------------
+app.post('/api/crear-solicitud', async (req, res) => {
+    // 1. Obtenemos los datos del formulario (del req.body)
+    const { nombre_apellido, telefono, direccion, categoria_trabajo, descripcion_problema, urgencia, ventanas_horarias } = req.body;
 
-                            <Form onSubmit={handleSubmit}>
-                                {/* ----------------------- SECCIÓN DATOS DE CONTACTO ----------------------- */}
-                                <h5 className="mb-3">Datos de Contacto</h5>
-                                <Row>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3" controlId="formNombre">
-                                            <Form.Label>Nombre y Apellido</Form.Label>
-                                            <Form.Control 
-                                                type="text" 
-                                                name="nombre_apellido"
-                                                value={formData.nombre_apellido}
-                                                onChange={handleChange}
-                                                required 
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col md={6}>
-                                        <Form.Group className="mb-3" controlId="formTelefono">
-                                            <Form.Label>Teléfono (WhatsApp)</Form.Label>
-                                            <Form.Control 
-                                                type="text" 
-                                                name="telefono"
-                                                value={formData.telefono}
-                                                onChange={handleChange}
-                                                required 
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
+    // 2. Definimos la hoja y creamos la marca temporal
+    const SHEET_NAME = 'Respuestas de formulario 1';
+    const marcaTemporal = new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }); // Formato local
+    const estadoInicial = 'NUEVO'; 
+    const linkFotos = ''; 
 
-                                <Form.Group className="mb-4" controlId="formDireccion">
-                                    <Form.Label>Dirección / Localidad</Form.Label>
-                                    <Form.Control 
-                                        type="text" 
-                                        name="direccion"
-                                        value={formData.direccion}
-                                        onChange={handleChange}
-                                        placeholder="Ej: Av. Corrientes 1234, Almagro"
-                                        required 
-                                    />
-                                </Form.Group>
+    // 3. Preparamos la fila en el orden exacto de tu Google Sheet (A hasta O)
+    // (Basado en image_a1e304.png)
+    const newRow = [
+        marcaTemporal,                  // A: MARCA_TEMPORAL
+        nombre_apellido || '',          // B: NOMBRE_APELLIDO
+        telefono || '',                 // C: TELEFONO
+        direccion || '',                // D: DIRECCIÓN
+        categoria_trabajo || '',        // E: CATEGORIA_TRABAJO
+        descripcion_problema || '',     // F: DESCRIPCIÓN_PROBLEMA
+        linkFotos,                      // G: FOTOS_VIDEOS
+        urgencia || '',                 // H: URGENCIA
+        ventanas_horarias || '',        // I: VENTANAS_HORARIAS (Viene como string CSV)
+        estadoInicial,                  // J: ESTADO
+        '',                             // K: PRESUPUESTO
+        '',                             // L: MONTO_COTIZADO
+        '',                             // M: LINK_PAGO
+        '',                             // N: NOTAS
+        ''                              // O: PAGO_RECIBIDO
+    ];
 
-                                {/* ----------------------- SECCIÓN PROBLEMA ----------------------- */}
-                                <h5 className="mb-3">Detalles del Trabajo</h5>
-                                
-                                <Form.Group className="mb-3" controlId="formCategoria">
-                                    <Form.Label>Categoría del Trabajo</Form.Label>
-                                    <Form.Select
-                                        name="categoria_trabajo"
-                                        value={formData.categoria_trabajo}
-                                        onChange={handleChange}
-                                        required
-                                    >
-                                        <option value="">Seleccione una categoría...</option>
-                                        {categorias.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </Form.Select>
-                                </Form.Group>
-
-                                <Form.Group className="mb-4" controlId="formDescripcion">
-                                    <Form.Label>Descripción del Problema</Form.Label>
-                                    <Form.Control 
-                                        as="textarea"
-                                        rows={4}
-                                        name="descripcion_problema"
-                                        value={formData.descripcion_problema}
-                                        onChange={handleChange}
-                                        placeholder="Lo más claro posible. Ej: La canilla pierde agua constantemente, necesito instalar 3 tomas de corriente en el living."
-                                        required
-                                    />
-                                </Form.Group>
-                                
-                                {/* ----------------------- SECCIÓN URGENCIA (Radio Buttons) ----------------------- */}
-                                <Form.Group className="mb-4" controlId="formUrgencia">
-                                    <Form.Label className="fw-bold">¿QUÉ TAN URGENTE ES?</Form.Label>
-                                    {opcionesUrgencia.map((opcion, index) => (
-                                        <Form.Check
-                                            key={index}
-                                            type="radio"
-                                            name="urgencia"
-                                            id={`urgencia-${index}`}
-                                            label={opcion}
-                                            value={opcion}
-                                            // El checked se basa en el estado actual
-                                            checked={formData.urgencia === opcion}
-                                            onChange={handleChange}
-                                            className="ms-3"
-                                        />
-                                    ))}
-                                </Form.Group>
-
-                                {/* ----------------------- SECCIÓN HORARIOS (Checkboxes) ----------------------- */}
-                                <Form.Group className="mb-4" controlId="formHorarios">
-                                    <Form.Label className="fw-bold">VENTANAS HORARIAS</Form.Label>
-                                    <p className="text-muted small mb-2">Seleccione todas las que apliquen:</p>
-                                    {opcionesVentanas.map((opcion, index) => (
-                                        <Form.Check
-                                            key={index}
-                                            type="checkbox"
-                                            name="ventanas_horarias"
-                                            id={`ventana-${index}`}
-                                            label={opcion}
-                                            value={opcion}
-                                            // El checked se basa en si el valor está en el array del estado
-                                            checked={formData.ventanas_horarias.includes(opcion)}
-                                            onChange={handleCheckboxChange}
-                                            className="ms-3"
-                                        />
-                                    ))}
-                                </Form.Group>
+    try {
+        // 4. Usamos 'append' para añadir la fila al final de la hoja
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${SHEET_NAME}!A:O`, 
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+                values: [newRow],
+            },
+        });
+        
+        res.status(201).json({ success: true, message: 'Solicitud creada exitosamente.' });
+    
+    } catch (error) {
+        console.error('--- ERROR DETECTADO (Crear Solicitud) ---');
+        console.error(error);
+        console.error('-----------------------');
+        res.status(500).json({ error: 'No se pudo crear la solicitud en Google Sheets.' });
+    }
+});
 
 
-                                <div className="d-grid gap-3 mt-4">
-                                    <Button variant="primary" type="submit" size="lg" disabled={loading}>
-                                        {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Enviar Solicitud'}
-                                    </Button>
-                                    <Link to="/login" className="text-center">
-                                        <Button variant="outline-secondary" className="w-100">
-                                            Volver al Login de Administrador
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
-    );
-};
+// --- Ruta de Prueba ---
+app.get('/', (req, res) => {
+    res.send('Servidor de UrbanFix Backend en funcionamiento.');
+});
 
-export default SolicitudForm;
+// --- Iniciar el Servidor ---
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor Express corriendo en http://localhost:${PORT}`);
+});
