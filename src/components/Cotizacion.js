@@ -5,7 +5,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-// Imports corregidos: Stack y XCircleFill añadidos, Table y logo eliminados
+// Imports corregidos
 import { Container, Row, Col, Card, Form, Button, InputGroup, Alert, Spinner, Stack } from 'react-bootstrap';
 import { XCircleFill } from 'react-bootstrap-icons';
 
@@ -26,16 +26,15 @@ const estadosValidos = [
 ];
 
 const Cotizacion = () => {
-    // 'id' ya no se extrae porque no se usa directamente en el componente
     useParams(); 
-    const location = useLocation(); // Para recibir los datos del cliente
+    const location = useLocation(); 
     const navigate = useNavigate();
 
     // Estados del formulario
     const [solicitud, setSolicitud] = useState(null);
     const [lineItems, setLineItems] = useState([{ descripcion: '', precio: 0 }]);
     const [costoManoDeObra, setCostoManoDeObra] = useState(0);
-    const [costoMateriales, setCostoMateriales] = useState(0); // Este es el 'monto_cotizado'
+    const [costoMateriales, setCostoMateriales] = useState(0); 
     const [estadoActual, setEstadoActual] = useState('COTIZADO');
     
     const [loading, setLoading] = useState(false);
@@ -48,21 +47,13 @@ const Cotizacion = () => {
             setSolicitud(data);
             setEstadoActual(data.estado || 'NUEVO');
             
-            // Si ya existe un presupuesto (Col K) y un monto (Col L), los cargamos
-            if (data.presupuesto) {
-                try {
-                    // Intentamos parsear el JSON de la Col K
-                    const parsedPresupuesto = JSON.parse(data.presupuesto);
-                    if (parsedPresupuesto.items) {
-                        setLineItems(parsedPresupuesto.items);
-                    }
-                    setCostoManoDeObra(parsedPresupuesto.manoDeObra || 0);
-                } catch (e) {
-                    console.warn("No se pudo parsear el presupuesto existente, empezando de cero.");
-                }
-            }
+            // 💡 NOTA: Como no guardamos el JSON, si recargas esta página
+            // los items y mano de obra volverán a 0. Solo el total (Monto Cotizado)
+            // y el Estado persistirán desde Google Sheets.
             if (data.monto_cotizado) {
-                setCostoMateriales(parseFloat(data.monto_cotizado) || 0);
+                // Ya no podemos "adivinar" los materiales,
+                // pero podemos setear el total si ya existe.
+                // Por simplicidad, dejaremos que el usuario re-ingrese si quiere editar.
             }
         }
     }, [location.state]);
@@ -90,9 +81,7 @@ const Cotizacion = () => {
     };
 
     const calcularTotal = () => {
-        // La corrección está aquí (se eliminó 'const subtotal = calcularSubtotal();')
-        
-        // El total es: Monto Materiales (costoMateriales) + Monto Mano de Obra (costoManoDeObra)
+        // Total = (Monto Materiales) + (Monto Mano de Obra)
         const total = (parseFloat(costoMateriales) || 0) + (parseFloat(costoManoDeObra) || 0);
         return total;
     };
@@ -106,16 +95,19 @@ const Cotizacion = () => {
         const totalFinal = calcularTotal();
 
         // 1. Preparamos el payload para el Backend (para Google Sheets)
-        const presupuestoJSON = JSON.stringify({
-            items: lineItems,
-            manoDeObra: costoManoDeObra
-        });
+        // El JSON de presupuesto solo se usa para el PDF, no se envía al backend.
+        // const presupuestoJSON = JSON.stringify({
+        //     items: lineItems,
+        //     manoDeObra: costoManoDeObra
+        // });
 
+        // ✅ --- CORRECCIÓN LÓGICA ---
+        // Ahora el payload solo lleva el estado y el TOTAL (Monto Cotizado).
         const payload = {
             sheetRowIndex: solicitud.sheetRowIndex,
             newStatus: estadoActual,
-            newMonto: costoMateriales, // Guardamos Materiales en Col L (Monto Cotizado)
-            newPresupuesto: presupuestoJSON // Guardamos el JSON de ítems/mano de obra en Col K (Presupuesto)
+            newMonto: totalFinal, // <-- ¡Enviamos el TOTAL!
+            // newPresupuesto ya no se envía
         };
 
         try {
@@ -124,6 +116,7 @@ const Cotizacion = () => {
             console.log("Cotización guardada en Google Sheets.");
 
             // 3. Generar PDF (si se solicitó)
+            // El PDF se sigue generando con el detalle completo (ítems, mano de obra)
             if (generarPDF) {
                 generarPDFInterno(totalFinal);
             }
@@ -133,6 +126,7 @@ const Cotizacion = () => {
 
         } catch (err) {
             console.error("Error al guardar la cotización:", err);
+            // El error genérico sigue funcionando
             setError("Error al guardar la cotización. Revisa los permisos de 'Editor' en Google Sheets.");
         } finally {
             setLoading(false);
@@ -142,56 +136,37 @@ const Cotizacion = () => {
     const generarPDFInterno = (total) => {
         const doc = new jsPDF();
         
+        // ... (El código de 'generarPDFInterno' no necesita cambios) ...
         // --- Cabecera del PDF ---
-        try {
-            // No hay logo.svg importado, por lo que esta sección está comentada
-            // doc.addImage(logo, 'SVG', 10, 10, 50, 20); 
-        } catch (e) {
-            console.warn("No se pudo cargar el logo SVG. Omitiendo.");
-        }
-        
         doc.setFontSize(20);
         doc.text("COTIZACIÓN DE SERVICIO", 105, 20, { align: 'center' });
         doc.setFontSize(12);
         doc.text("UrbanFix - Lo Hacemos Real", 105, 30, { align: 'center' });
-        
-        doc.line(10, 35, 200, 35); // Línea divisoria
-
+        doc.line(10, 35, 200, 35); 
         // --- Datos del Cliente y Presupuesto ---
         doc.setFontSize(12);
         doc.text("Cliente:", 10, 45);
         doc.text(solicitud?.nombre_apellido || 'N/A', 40, 45);
-        
         doc.text("Dirección:", 10, 52);
         doc.text(solicitud?.direccion || 'N/A', 40, 52);
-
         doc.text("Teléfono:", 10, 59);
         doc.text(solicitud?.telefono || 'N/A', 40, 59);
-
         doc.text("N° Presupuesto:", 150, 45);
         doc.text(solicitud?.id || 'N/A', 180, 45);
-
         doc.text("Fecha:", 150, 52);
         doc.text(new Date().toLocaleDateString('es-AR'), 180, 52);
-
-        doc.line(10, 65, 200, 65); // Línea divisoria
-
+        doc.line(10, 65, 200, 65); 
         // --- Detalle (Tabla de Ítems) ---
         const tableColumn = ["Descripción", "Precio"];
         const tableRows = lineItems.map(item => [item.descripcion, `$${parseFloat(item.precio) || 0}`]);
-
-        // Añadimos Mano de Obra y Materiales a la tabla
         tableRows.push(["Costo Materiales (Monto Cotizado)", `$${parseFloat(costoMateriales) || 0}`]);
         tableRows.push(["Costo Mano de Obra", `$${parseFloat(costoManoDeObra) || 0}`]);
-
         doc.autoTable(tableColumn, tableRows, { startY: 70 });
-
         // --- Total ---
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
         doc.text("TOTAL (Materiales + Mano de Obra):", 10, doc.autoTable.previous.finalY + 15);
         doc.text(`$${total.toFixed(2)}`, 190, doc.autoTable.previous.finalY + 15, { align: 'right' });
-
         // --- Guardar PDF ---
         doc.save(`Presupuesto_UrbanFix_${solicitud?.id}.pdf`);
     };
@@ -289,7 +264,7 @@ const Cotizacion = () => {
                                     </Col>
                                     <Col md={6}>
                                         <Form.Group className="mb-3" controlId="formMateriales">
-                                            <Form.Label className="fw-bold">Materiales (Monto Cotizado) ($)</Form.Label>
+                                            <Form.Label className="fw-bold">Materiales ($)</Form.Label>
                                             <InputGroup>
                                                 <InputGroup.Text>$</InputGroup.Text>
                                                 <Form.Control
