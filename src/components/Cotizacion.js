@@ -3,19 +3,17 @@
 
 import React from 'react';
 import { useState, useEffect } from 'react';
+// ✅ 'id' FUE ELIMINADO DE AQUÍ (AHORA SOLO SE LLAMA A 'useParams()')
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-// ✅ 1. 'Stack' FUE AÑADIDO AL FINAL DE ESTA LÍNEA
-import { Container, Row, Col, Card, Form, Button, InputGroup, Table, Alert, Spinner, Stack } from 'react-bootstrap';
-// ✅ 2. ESTA LÍNEA FUE AÑADIDA
+// ✅ 'Table' FUE ELIMINADO DE ESTA LÍNEA
+import { Container, Row, Col, Card, Form, Button, InputGroup, Alert, Spinner, Stack } from 'react-bootstrap';
 import { XCircleFill } from 'react-bootstrap-icons';
 
 // Importamos la librería de PDF
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-// Importamos el logo (asumiendo que SÍ lo tienes en src/logo.svg)
-// Si no lo tienes, puedes comentar la línea del logo en el PDF.
-import logo from '../logo.svg'; 
+// ✅ LA LÍNEA DE 'import logo' FUE ELIMINADA
 
 // URL del Backend
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -30,7 +28,8 @@ const estadosValidos = [
 ];
 
 const Cotizacion = () => {
-    const { id } = useParams(); // Obtiene el 'sheet-1' de la URL
+    // ✅ 'id' YA NO SE EXTRAE PORQUE NO SE USABA
+    useParams(); // Obtiene el 'id' de la URL, pero no lo usamos.
     const location = useLocation(); // Para recibir los datos del cliente
     const navigate = useNavigate();
 
@@ -93,20 +92,8 @@ const Cotizacion = () => {
     };
 
     const calcularTotal = () => {
-        const subtotal = calcularSubtotal();
-        const manoDeObra = parseFloat(costoManoDeObra) || 0;
-        const materiales = parseFloat(costoMateriales) || 0;
-        // El total es la suma de los ítems + mano de obra + materiales.
-        // PERO, si el usuario quiere que el "monto cotizado" (materiales) sea el total, 
-        // ajustamos la fórmula.
-        
-        // Asumamos que el Total es:
-        // Total = (Suma de Ítems) + Mano de Obra.
-        // Y el "Monto Cotizado" (Col L) es solo para materiales o un total aparte.
-        
-        // Vamos a seguir tu petición:
-        // Total (del PDF) = (Mano de Obra) + (Materiales)
-        // Y los 'lineItems' son solo descriptivos.
+        // ✅ LAS VARIABLES 'subtotal', 'manoDeObra' y 'materiales' SE ELIMINARON
+        // PORQUE NO SE USABAN DENTRO DE ESTA FUNCIÓN.
         
         // NUEVA LÓGICA (basada en tu descripción):
         // Monto Materiales (Col L)

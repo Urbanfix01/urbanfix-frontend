@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Form, Button, Card, Alert, Spinner, Stack } from 'react-bootstrap'; 
+// ✅ 'Stack' FUE ELIMINADO DE ESTA LÍNEA PORQUE NO SE USABA
+import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from 'react-bootstrap'; 
 import { Link } from 'react-router-dom';
 
 // Usamos la misma lógica de URL (Producción o Local)
@@ -242,7 +243,7 @@ const SolicitudForm = () => {
                                         <Button variant="outline-secondary" className="w-100">
                                             Volver al Login de Administrador
                                         </Button>
-                                    </Link>
+                                    </al-icon>
                                 </div>
                             </Form>
                         </Card.Body>
