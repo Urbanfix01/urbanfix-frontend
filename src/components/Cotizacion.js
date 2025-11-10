@@ -6,7 +6,8 @@ import axios from 'axios';
 import { Container, Row, Col, Card, Form, Button, InputGroup, Alert, Spinner, Stack } from 'react-bootstrap';
 import { XCircleFill } from 'react-bootstrap-icons';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// ✅ 1. IMPORTACIÓN CORREGIDA
+import autoTable from 'jspdf-autotable';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
     ? 'https://urbanfix-backend-4sfg.onrender.com'
@@ -38,7 +39,6 @@ const Cotizacion = () => {
             setSolicitud(data);
             setEstadoActual(data.estado || 'NUEVO');
             
-            // Lógica restaurada para cargar datos existentes
             if (data.presupuesto) {
                 try {
                     const parsedPresupuesto = JSON.parse(data.presupuesto);
@@ -52,7 +52,6 @@ const Cotizacion = () => {
             }
             if (data.monto_cotizado) {
                  if (!data.presupuesto) {
-                    // Si no hay JSON de presupuesto, asumimos que el monto es solo materiales
                     setCostoMateriales(parseFloat(data.monto_cotizado) || 0);
                  }
             }
@@ -75,10 +74,6 @@ const Cotizacion = () => {
 
     // --- Cálculos de Totales ---
     const calcularTotal = () => {
-        // El total es la suma de los ítems + mano de obra + materiales.
-        // PERO tu lógica es: Total = Mano de Obra + Materiales.
-        // Y el 'Monto Cotizado' (Col L) es ESE total.
-        
         const total = (parseFloat(costoMateriales) || 0) + (parseFloat(costoManoDeObra) || 0);
         return total;
     };
@@ -87,10 +82,8 @@ const Cotizacion = () => {
     const handleSaveAndGeneratePDF = async (generarPDF = false) => {
         setLoading(true);
         setError(null);
-
         const totalFinal = calcularTotal();
 
-        // Payload restaurado: Enviamos JSON (Col K) y Total (Col L)
         const presupuestoJSON = JSON.stringify({
             items: lineItems,
             manoDeObra: costoManoDeObra
@@ -99,45 +92,32 @@ const Cotizacion = () => {
         const payload = {
             sheetRowIndex: solicitud.sheetRowIndex,
             newStatus: estadoActual,
-            newMonto: totalFinal, // <-- El Total se guarda en Monto Cotizado (Col L)
-            newPresupuesto: presupuestoJSON // <-- El JSON se guarda en Presupuesto (Col K)
+            newMonto: totalFinal,
+            newPresupuesto: presupuestoJSON 
         };
 
-        // --- TRY/CATCH MEJORADO ---
         try {
-            // 1. Guardamos en Google Sheets
             await axios.patch(`${API_BASE_URL}/api/update-solicitud`, payload);
             console.log("Cotización guardada en Google Sheets.");
 
-            // 2. Generar PDF (si se solicitó)
             if (generarPDF) {
                 try {
                     generarPDFInterno(totalFinal);
                 } catch (pdfError) {
                     console.error("¡Guardado exitoso, PERO falló el PDF!", pdfError);
-                    // El guardado funcionó, pero el PDF falló.
-                    // Mostramos un error específico de PDF.
                     setError(`Guardado en Sheets exitoso, pero falló la generación del PDF. Error: ${pdfError.message}`);
                     setLoading(false);
-                    // Nos quedamos en la página para que el usuario vea el error
                     return; 
                 }
             }
-
-            // 3. Volver al dashboard (Solo si todo salió bien)
             navigate('/dashboard');
 
         } catch (apiError) {
-            // Esto solo se activa si 'axios.patch' (el guardado) falla
             console.error("Error al guardar la cotización (API):", apiError);
-            // ✅ Mensaje de error más específico
             setError("Error al guardar en Google Sheets. Revisa los logs de Render para ver el error de la API.");
-        } finally {
-            // Solo desactivamos el loading si no hemos salido de la página o si hubo error
-            if (!generarPDF || error) { 
-                setLoading(false);
-            }
+            setLoading(false); // Nos quedamos en la página si la API falla
         }
+        // No ponemos 'finally' porque el 'setLoading(false)' se maneja dentro de los catch
     };
 
     const generarPDFInterno = (total) => {
@@ -147,53 +127,47 @@ const Cotizacion = () => {
         doc.text("COTIZACIÓN DE SERVICIO", 105, 20, { align: 'center' });
         doc.setFontSize(12);
         doc.text("UrbanFix - Lo Hacemos Real", 105, 30, { align: 'center' });
-        doc.line(10, 35, 200, 35); // Línea divisoria
+        doc.line(10, 35, 200, 35); 
 
-        // --- Datos del Cliente y Presupuesto ---
         doc.setFontSize(12);
         doc.text("Cliente:", 10, 45);
         doc.text(solicitud?.nombre_apellido || 'N/A', 40, 45);
-        
         doc.text("Dirección:", 10, 52);
         doc.text(solicitud?.direccion || 'N/A', 40, 52);
-
         doc.text("Teléfono:", 10, 59);
         doc.text(solicitud?.telefono || 'N/A', 40, 59);
-
         doc.text("N° Presupuesto:", 150, 45);
         doc.text(solicitud?.id || 'N/A', 180, 45);
-
         doc.text("Fecha:", 150, 52);
         doc.text(new Date().toLocaleDateString('es-AR'), 180, 52);
+        doc.line(10, 65, 200, 65);
 
-        doc.line(10, 65, 200, 65); // Línea divisoria
-
-        // --- Detalle (Tabla de Ítems) ---
         const tableColumn = ["Descripción", "Precio (Descriptivo)"];
         const tableRows = lineItems.map(item => [item.descripcion, `$${parseFloat(item.precio) || 0}`]);
         
-        // Añadimos Mano de Obra y Materiales a la tabla
         tableRows.push(["Costo Materiales", `$${parseFloat(costoMateriales) || 0}`]);
         tableRows.push(["Costo Mano de Obra", `$${parseFloat(costoManoDeObra) || 0}`]);
 
-        // Verificación de seguridad para autoTable
         let startY = 70;
-        if (doc.autoTable) {
-            doc.autoTable(tableColumn, tableRows, { startY: 70 });
-            startY = doc.autoTable.previous.finalY; // Obtenemos la posición final
+        
+        // ✅ 2. LLAMADA CORREGIDA
+        if (autoTable) {
+            autoTable(doc, { // El primer argumento es el 'doc'
+                head: [tableColumn],
+                body: tableRows,
+                startY: startY
+            });
+            startY = doc.autoTable.previous.finalY; 
         } else {
             console.error("jsPDF autoTable plugin no está cargado.");
             doc.text("Error: No se pudo generar la tabla del PDF.", 10, startY);
-            startY += 10; // Espacio para el error
+            startY += 10; 
         }
 
-        // --- Total ---
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
         doc.text("TOTAL (Materiales + Mano de Obra):", 10, startY + 15);
         doc.text(`$${total.toFixed(2)}`, 190, startY + 15, { align: 'right' });
-
-        // --- Guardar PDF ---
         doc.save(`Presupuesto_UrbanFix_${solicitud?.id}.pdf`);
     };
 
@@ -209,7 +183,6 @@ const Cotizacion = () => {
         );
     }
 
-    // --- Renderizado del Formulario ---
     return (
         <Container className="mt-5 mb-5">
             <Row className="justify-content-center">
@@ -225,7 +198,6 @@ const Cotizacion = () => {
 
                             {error && <Alert variant="danger">{error}</Alert>}
 
-                            {/* Datos del Cliente (Solo Lectura) */}
                             <Card className="mb-4 bg-light">
                                 <Card.Body>
                                     <h5 className="mb-3">Datos del Cliente</h5>
@@ -237,7 +209,6 @@ const Cotizacion = () => {
                             </Card>
 
                             <Form>
-                                {/* --- Formulario Dinámico de Ítems --- */}
                                 <h5 className="mb-3">Detalle de Cotización (Ítems descriptivos)</h5>
                                 {lineItems.map((item, index) => (
                                     <Row key={index} className="mb-2 align-items-center">
@@ -273,7 +244,6 @@ const Cotizacion = () => {
 
                                 <hr className="my-4" />
 
-                                {/* --- Sección de Totales y Estado --- */}
                                 <Row>
                                     <Col md={6}>
                                         <Form.Group className="mb-3" controlId="formManoDeObra">
@@ -290,7 +260,6 @@ const Cotizacion = () => {
                                     </Col>
                                     <Col md={6}>
                                         <Form.Group className="mb-3" controlId="formMateriales">
-                                             {/* Texto corregido, ya no dice Monto Cotizado */}
                                             <Form.Label className="fw-bold">Materiales ($)</Form.Label>
                                             <InputGroup>
                                                 <InputGroup.Text>$</InputGroup.Text>
@@ -325,7 +294,6 @@ const Cotizacion = () => {
                                     </Col>
                                 </Row>
                                 
-                                {/* --- Botones de Acción --- */}
                                 <Stack direction="horizontal" gap={3} className="mt-4 justify-content-end">
                                     <Button 
                                         variant="outline-primary" 
@@ -336,7 +304,7 @@ const Cotizacion = () => {
                                     </Button>
                                     <Button 
                                         variant="success"
-                                        onClick={() => handleSaveAndGeneratePDF(true)} // Guardar Y Generar PDF
+                                        onClick={() => handleSaveAndGeneratePDF(true)}
                                         disabled={loading}
                                     >
                                         {loading ? <Spinner size="sm" animation="border" /> : "Guardar y Generar PDF"}
@@ -351,5 +319,4 @@ const Cotizacion = () => {
     );
 };
 // Forzando el guardado
-
 export default Cotizacion;
