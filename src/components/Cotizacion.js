@@ -157,7 +157,7 @@ const Cotizacion = () => {
                 body: tableRows,
                 startY: startY
             });
-            startY = doc.autoTable.previous.finalY; 
+            startY = doc.lastAutoTable.finalY; 
         } else {
             console.error("jsPDF autoTable plugin no está cargado.");
             doc.text("Error: No se pudo generar la tabla del PDF.", 10, startY);
