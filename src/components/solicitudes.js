@@ -1,12 +1,14 @@
+// src/components/solicitudes.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// 🌟 Stack, Spinner, y Iconos añadidos
+// Stack, Spinner, y Iconos añadidos
 import { Container, Table, Button, Form, Alert, Spinner, Stack } from 'react-bootstrap'; 
 import { PencilFill, SaveFill, XCircleFill } from 'react-bootstrap-icons';
-// 🌟 useNavigate añadido
+// useNavigate añadido
 import { Link, useNavigate } from 'react-router-dom';
 
-// 🌟 CAMBIO 2: URL de API actualizada
+// CAMBIO 2: URL de API actualizada
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
     ? 'https://urbanfix-backend-4sfg.onrender.com' // <--- ¡Tu URL pública!
     : 'http://localhost:3000'; 
@@ -15,14 +17,13 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 const getStatusVariant = (estado) => {
     const estadoNorm = estado?.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'PENDIENTE';
 
-    // 🌟 SINCRONIZACIÓN 4: Actualizado para coincidir con tu lista de estados
+    // SINCRONIZACIÓN 4: Actualizado para coincidir con tu lista de estados
     switch (estadoNorm) {
         case 'ACEPTADO':
         case 'FINALIZADO':
         case 'CERRADO':
             return 'success'; // Verdes
         
-        // 🌟 CORRECCIÓN ESLINT (no-fallthrough)
         // eslint-disable-next-line no-fallthrough
         case 'PENDIENTE':
         case 'EN CURSO':
@@ -32,13 +33,11 @@ const getStatusVariant = (estado) => {
         case 'CANCELADO':
             return 'danger'; // Rojo
         
-        // 🌟 CORRECCIÓN ESLINT (no-fallthrough)
         // eslint-disable-next-line no-fallthrough
         case 'VISITA COTIZADA':
         case 'VISITA AGENDADA':
             return 'info'; // Azules
 
-        // 🌟 CORRECCIÓN ESLINT (no-fallthrough)
         // eslint-disable-next-line no-fallthrough
         case 'PRESUPUESTADO':
         case 'COTIZADO': 
@@ -54,12 +53,12 @@ const Solicitudes = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null); 
     
-    // 🌟 NUEVO: Estado para rastrear qué fila estamos editando
+    // NUEVO: Estado para rastrear qué fila estamos editando
     const [editingRowId, setEditingRowId] = useState(null);
-    // 🌟 NUEVO: Estado para guardar el valor original al cancelar
+    // NUEVO: Estado para guardar el valor original al cancelar
     const [originalRowData, setOriginalRowData] = useState(null);
 
-    // 🌟 SINCRONIZACIÓN 5: Lista de estados disponibles (basada en tu planilla)
+    // SINCRONIZACIÓN 5: Lista de estados disponibles (basada en tu planilla)
     const estadosValidos = [
         'NUEVO', 
         'COTIZADO', 
@@ -74,36 +73,37 @@ const Solicitudes = () => {
         'PENDIENTE' // Asegurándonos que PENDIENTE esté
     ];
 
-    // 🌟 Hook useNavigate
+    // Hook useNavigate
     const navigate = useNavigate();
 
     // Lógica para obtener los datos al cargar el componente
-    useEffect(() => {
-        const fetchSolicitudes = async () => {
-            setLoading(true);
-            setError(null);
+    const fetchSolicitudes = async () => { // Hacemos esta función accesible fuera de useEffect
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/solicitudes-sheet`);
             
-            try {
-                const response = await axios.get(`${API_BASE_URL}/api/solicitudes-sheet`);
-                
-                if (response.data.error) {
-                    throw new Error(response.data.error);
-                }
-                // Ya no necesitamos 'isDirty', el 'editingRowId' maneja esto
-                setSolicitudes(response.data.solicitudes); 
-
-            } catch (err) {
-                console.error("Error al obtener solicitudes:", err);
-                setError('Fallo al cargar datos del Backend. Asegúrate que Express esté corriendo en el puerto 3000.');
-            } finally {
-                setLoading(false);
+            if (response.data.error) {
+                throw new Error(response.data.error);
             }
-        };
+            // Ya no necesitamos 'isDirty', el 'editingRowId' maneja esto
+            setSolicitudes(response.data.solicitudes); 
 
+        } catch (err) {
+            console.error("Error al obtener solicitudes:", err);
+            // ✅ CORRECCIÓN DE ERROR: Mensaje genérico para la nube
+            setError('Fallo al cargar datos del Backend. Por favor, asegúrate que el servicio de Render esté activo y revisa la consola para más detalles.');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
         fetchSolicitudes();
     }, []); 
 
-    // 🌟 LÓGICA DE ACTUALIZACIÓN (SOLO VISUAL)
+    // LÓGICA DE ACTUALIZACIÓN (SOLO VISUAL)
     const handleEstadoChange = (solicitudId, newStatus) => {
         setSolicitudes(currentSolicitudes =>
             currentSolicitudes.map(sol =>
@@ -112,7 +112,7 @@ const Solicitudes = () => {
         );
     };
     
-    // 🌟 NUEVA FUNCIÓN: Actualización visual del Monto
+    // NUEVA FUNCIÓN: Actualización visual del Monto
     const handleMontoChange = (solicitudId, newMonto) => {
         setSolicitudes(currentSolicitudes =>
             currentSolicitudes.map(sol =>
@@ -122,14 +122,14 @@ const Solicitudes = () => {
     };
 
 
-    // 🌟 NUEVO: Se activa al hacer clic en el lápiz ✏️
+    // NUEVO: Se activa al hacer clic en el lápiz ✏️
     const handleEditClick = (solicitud) => {
         setEditingRowId(solicitud.id);
-        // 🌟 Guardamos la fila completa original
+        // Guardamos la fila completa original
         setOriginalRowData(solicitud); 
     };
 
-    // 🌟 NUEVO: Se activa al hacer clic en la X ❌
+    // NUEVO: Se activa al hacer clic en la X ❌
     const handleCancelClick = (solicitudId) => {
         // Revierte el estado visual al original
         setSolicitudes(currentSolicitudes =>
@@ -141,14 +141,12 @@ const Solicitudes = () => {
         setOriginalRowData(null);
     };
 
-    // 🌟 LÓGICA DE GUARDADO (LLAMADA A LA API)
+    // LÓGICA DE GUARDADO (LLAMADA A LA API)
     const handleSaveClick = async (solicitud) => {
-        // 'id' se usa para la UI, el resto para la API
-        // 🌟 CORRECCIÓN: 'id' eliminado de la desestructuración (Advertencia)
         const { sheetRowIndex, estado, monto_cotizado } = solicitud;
 
         try {
-            // 🌟 LLAMADA A LA NUEVA RUTA DE API
+            // LLAMADA A LA NUEVA RUTA DE API
             await axios.patch(`${API_BASE_URL}/api/update-solicitud`, {
                 sheetRowIndex: sheetRowIndex,
                 newStatus: estado, 
@@ -157,20 +155,31 @@ const Solicitudes = () => {
             
             setEditingRowId(null); // Sale del modo edición
             setOriginalRowData(null);
+
+            // ✅ CORRECCIÓN: Volvemos a cargar la tabla al guardar
+            await fetchSolicitudes();
             
             // Navega al dashboard para forzar la actualización de estadísticas
-            navigate('/dashboard');
+            navigate('/dashboard'); 
         
         } catch (error) {
             console.error("Error al actualizar el estado:", error);
-            setError("Error al guardar el cambio en Google Sheets. La página se recargará para re-sincronizar.");
-            setTimeout(() => window.location.reload(), 2000); 
+            setError("Error al guardar el cambio. Intente de nuevo.");
+            
+            // Revertimos la fila y salimos del modo edición en caso de error
+            handleCancelClick(solicitud.id);
         }
     };
 
+    // LÓGICA DE NAVEGACIÓN A COTIZACIÓN
+    const handleCotizarClick = (solicitud) => {
+        // Navega a la nueva ruta y pasa la data de la solicitud
+        navigate(`/cotizar/${solicitud.id}`, { state: { solicitud } });
+    }
+
 
     if (loading) {
-        // 🌟 CORRECCIÓN: Spinner re-añadido
+        // CORRECCIÓN: Spinner re-añadido
         return (
             <Container className="mt-5 text-center">
                 <Spinner animation="border" role="status" variant="primary" className="me-2" />
@@ -183,7 +192,7 @@ const Solicitudes = () => {
         return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
     }
 
-    // 🌟 CORRECCIÓN: Envuelto en un <Container> raíz
+    // CORRECCIÓN: Envuelto en un <Container> raíz
     return (
         <Container className="mt-5">
             {/* Elemento 1: Título y Botón Volver */}
@@ -215,7 +224,7 @@ const Solicitudes = () => {
                 </thead>
                 <tbody>
                     {solicitudes.map((solicitud, index) => {
-                        // 🌟 Variable para saber si ESTA fila está en modo edición
+                        // Variable para saber si ESTA fila está en modo edición
                         const isEditing = editingRowId === solicitud.id;
                         
                         return (
@@ -227,7 +236,7 @@ const Solicitudes = () => {
                                 <td>{solicitud.direccion || 'N/A'}</td>
                                 <td>{solicitud.categoria_trabajo || 'N/A'}</td>
                                 
-                                {/* 🌟 COLUMNA MONTO (Ahora editable) */}
+                                {/* COLUMNA MONTO (Ahora editable) */}
                                 <td>
                                     {isEditing ? (
                                         <Form.Control
@@ -242,7 +251,7 @@ const Solicitudes = () => {
                                     )}
                                 </td>
 
-                                {/* 🌟 COLUMNA ESTADO (Ahora editable) */}
+                                {/* COLUMNA ESTADO (Ahora editable) */}
                                 <td>
                                     {isEditing ? (
                                         <Form.Select
@@ -266,7 +275,7 @@ const Solicitudes = () => {
                                     )}
                                 </td>
                                 
-                                {/* 🌟 COLUMNA ACCIÓN (Botones) */}
+                                {/* COLUMNA ACCIÓN (Botones) */}
                                 <td>
                                     {isEditing ? (
                                         // ---------------- MODO EDICIÓN ----------------
@@ -290,14 +299,25 @@ const Solicitudes = () => {
                                         </Stack>
                                     ) : (
                                         // ---------------- MODO LECTURA ----------------
-                                        <Button 
-                                            variant="outline-primary" 
-                                            size="sm" 
-                                            onClick={() => handleEditClick(solicitud)}
-                                            title="Editar Estado y Monto"
-                                        >
-                                            <PencilFill />
-                                        </Button>
+                                        <Stack direction="horizontal" gap={2}>
+                                            <Button 
+                                                variant="outline-primary" 
+                                                size="sm" 
+                                                onClick={() => handleEditClick(solicitud)}
+                                                title="Editar Estado y Monto"
+                                            >
+                                                <PencilFill />
+                                            </Button>
+                                            {/* ✅ NUEVO BOTÓN: COTIZAR (Navega a la nueva ruta) */}
+                                            <Button 
+                                                variant="info" 
+                                                size="sm" 
+                                                onClick={() => handleCotizarClick(solicitud)}
+                                                title="Cotizar (Abre formulario de presupuesto)"
+                                            >
+                                                $
+                                            </Button>
+                                        </Stack>
                                     )}
                                 </td>
                             </tr>
