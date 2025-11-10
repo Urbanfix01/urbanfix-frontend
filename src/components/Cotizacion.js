@@ -3,17 +3,15 @@
 
 import React from 'react';
 import { useState, useEffect } from 'react';
-// ✅ 'id' FUE ELIMINADO DE AQUÍ (AHORA SOLO SE LLAMA A 'useParams()')
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-// ✅ 'Table' FUE ELIMINADO DE ESTA LÍNEA
+// Imports corregidos: Stack y XCircleFill añadidos, Table y logo eliminados
 import { Container, Row, Col, Card, Form, Button, InputGroup, Alert, Spinner, Stack } from 'react-bootstrap';
 import { XCircleFill } from 'react-bootstrap-icons';
 
 // Importamos la librería de PDF
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-// ✅ LA LÍNEA DE 'import logo' FUE ELIMINADA
 
 // URL del Backend
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -28,8 +26,8 @@ const estadosValidos = [
 ];
 
 const Cotizacion = () => {
-    // ✅ 'id' YA NO SE EXTRAE PORQUE NO SE USABA
-    useParams(); // Obtiene el 'id' de la URL, pero no lo usamos.
+    // 'id' ya no se extrae porque no se usa directamente en el componente
+    useParams(); 
     const location = useLocation(); // Para recibir los datos del cliente
     const navigate = useNavigate();
 
@@ -92,13 +90,9 @@ const Cotizacion = () => {
     };
 
     const calcularTotal = () => {
-        // ✅ LAS VARIABLES 'subtotal', 'manoDeObra' y 'materiales' SE ELIMINARON
-        // PORQUE NO SE USABAN DENTRO DE ESTA FUNCIÓN.
+        // La corrección está aquí (se eliminó 'const subtotal = calcularSubtotal();')
         
-        // NUEVA LÓGICA (basada en tu descripción):
-        // Monto Materiales (Col L)
-        // Monto Mano de Obra (se guarda en el JSON de Col K)
-        // Ítems (se guarda en el JSON de Col K)
+        // El total es: Monto Materiales (costoMateriales) + Monto Mano de Obra (costoManoDeObra)
         const total = (parseFloat(costoMateriales) || 0) + (parseFloat(costoManoDeObra) || 0);
         return total;
     };
@@ -149,10 +143,8 @@ const Cotizacion = () => {
         const doc = new jsPDF();
         
         // --- Cabecera del PDF ---
-        // (Si no tienes logo.svg, comenta esta línea)
         try {
-            // Intenta añadir el logo. Requiere que 'logo.svg' esté en src/
-            // Si falla (porque es un SVG), lo omitirá.
+            // No hay logo.svg importado, por lo que esta sección está comentada
             // doc.addImage(logo, 'SVG', 10, 10, 50, 20); 
         } catch (e) {
             console.warn("No se pudo cargar el logo SVG. Omitiendo.");
