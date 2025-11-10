@@ -280,7 +280,7 @@ const Cotizacion = () => {
                                                 />
                                             </InputGroup>
                                         </Col>
-                                        <Col md={1G}>
+                                        <Col md={1}>
                                             <Button variant="danger" size="sm" onClick={() => handleRemoveItem(index)}>
                                                 <XCircleFill />
                                             </Button>
