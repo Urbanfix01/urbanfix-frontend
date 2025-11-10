@@ -13,12 +13,43 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
     : 'http://localhost:3000'; 
 
 const getStatusVariant = (estado) => {
-// ... (código existente sin cambios) ...
+    const estadoNorm = estado?.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'PENDIENTE';
+
+    switch (estadoNorm) {
+        case 'ACEPTADO':
+        case 'FINALIZADO':
+        case 'CERRADO':
+            return 'success'; 
+        
+        // eslint-disable-next-line no-fallthrough
+        case 'PENDIENTE':
+        case 'EN CURSO':
+        case 'NUEVO': 
+            return 'warning'; 
+        
+        case 'CANCELADO':
+            return 'danger'; 
+        
+        // eslint-disable-next-line no-fallthrough
+        case 'VISITA COTIZADA':
+        case 'VISITA AGENDADA':
+            return 'info'; 
+
+        // eslint-disable-next-line no-fallthrough
+        case 'PRESUPUESTADO':
+        case 'COTIZADO': 
+        case 'COTIZADO (PV)':
+            return 'primary'; 
+        default:
+            return 'secondary';
+    }
 };
 
 const Solicitudes = () => {
     const [solicitudes, setSolicitudes] = useState([]);
-// ... (código existente sin cambios) ...
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); 
+    
     const [editingRowId, setEditingRowId] = useState(null);
     const [originalRowData, setOriginalRowData] = useState(null);
 
@@ -30,14 +61,40 @@ const Solicitudes = () => {
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
 
     const estadosValidos = [
-// ... (código existente sin cambios) ...
+        'NUEVO', 
+        'COTIZADO', 
+        'ACEPTADO', 
+        'EN CURSO', 
+        'FINALIZADO', 
+        'CERRADO', 
+        'CANCELADO', 
+        'VISITA COTIZADA', 
+        'VISITA AGENDADA', 
+        'COTIZADO (PV)',
+        'PENDIENTE' 
     ];
 
     const navigate = useNavigate();
 
     // Lógica para obtener los datos al cargar el componente
     const fetchSolicitudes = async () => { 
-// ... (código existente sin cambios) ...
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await axios.get(`${API_BASE_URL}/api/solicitudes-sheet`);
+            
+            if (response.data.error) {
+                throw new Error(response.data.error);
+            }
+            setSolicitudes(response.data.solicitudes); 
+
+        } catch (err) {
+            console.error("Error al obtener solicitudes:", err);
+            setError('Fallo al cargar datos del Backend. Por favor, asegúrate que el servicio de Render esté activo y revisa la consola para más detalles.');
+        } finally {
+            setLoading(false);
+        }
     };
     
     useEffect(() => {
@@ -46,32 +103,67 @@ const Solicitudes = () => {
 
     // LÓGICA DE ACTUALIZACIÓN (SOLO VISUAL)
     const handleEstadoChange = (solicitudId, newStatus) => {
-// ... (código existente sin cambios) ...
+        setSolicitudes(currentSolicitudes =>
+            currentSolicitudes.map(sol =>
+                sol.id === solicitudId ? { ...sol, estado: newStatus } : sol
+            )
+        );
     };
     
     const handleMontoChange = (solicitudId, newMonto) => {
-// ... (código existente sin cambios) ...
+        setSolicitudes(currentSolicitudes =>
+            currentSolicitudes.map(sol =>
+                sol.id === solicitudId ? { ...sol, monto_cotizado: newMonto } : sol
+            )
+        );
     };
 
 
     // Se activa al hacer clic en el lápiz ✏️
     const handleEditClick = (solicitud) => {
-// ... (código existente sin cambios) ...
+        setEditingRowId(solicitud.id);
+        setOriginalRowData(solicitud); 
     };
 
     // Se activa al hacer clic en la X ❌
     const handleCancelClick = (solicitudId) => {
-// ... (código existente sin cambios) ...
+        setSolicitudes(currentSolicitudes =>
+            currentSolicitudes.map(sol =>
+                sol.id === solicitudId ? originalRowData : sol
+            )
+        );
+        setEditingRowId(null); 
+        setOriginalRowData(null);
     };
 
     // LÓGICA DE GUARDADO (LLAMADA A LA API)
     const handleSaveClick = async (solicitud) => {
-// ... (código existente sin cambios) ...
+        const { sheetRowIndex, estado, monto_cotizado } = solicitud;
+
+        try {
+            await axios.patch(`${API_BASE_URL}/api/update-solicitud`, {
+                sheetRowIndex: sheetRowIndex,
+                newStatus: estado, 
+                newMonto: monto_cotizado || '0' 
+            });
+            
+            setEditingRowId(null); 
+            setOriginalRowData(null);
+            
+            await fetchSolicitudes();
+            
+            navigate('/dashboard');
+        
+        } catch (error) {
+            console.error("Error al actualizar el estado:", error);
+            setError("Error al guardar el cambio en Google Sheets. La página se recargará para re-sincronizar.");
+            setTimeout(() => window.location.reload(), 2000); 
+        }
     };
 
     // LÓGICA DE NAVEGACIÓN A COTIZACIÓN
     const handleCotizarClick = (solicitud) => {
-// ... (código existente sin cambios) ...
+        navigate(`/cotizar/${solicitud.id}`, { state: { solicitud } });
     };
 
     // ✅ NUEVO: Funciones para manejar el Modal de Detalles
@@ -86,16 +178,27 @@ const Solicitudes = () => {
 
 
     if (loading && solicitudes.length === 0) { // Muestra spinner solo en la carga inicial
-// ... (código existente sin cambios) ...
+        return (
+            <Container className="mt-5 text-center">
+                <Spinner animation="border" role="status" variant="primary" className="me-2" />
+                <span className="text-primary">Cargando solicitudes...</span>
+            </Container>
+        );
     }
     
     if (error) {
-// ... (código existente sin cambios) ...
+        return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
     }
 
     // Lógica de filtrado
     const solicitudesFiltradas = solicitudes.filter(solicitud => {
-// ... (código existente sin cambios) ...
+        const filtroEstado = statusFilter === 'TODOS' ? true : solicitud.estado === statusFilter;
+        
+        const filtroBusqueda = solicitud.nombre_apellido
+            ? solicitud.nombre_apellido.toLowerCase().includes(searchTerm.toLowerCase())
+            : false;
+            
+        return filtroEstado && filtroBusqueda;
     });
 
 
@@ -103,12 +206,60 @@ const Solicitudes = () => {
         <Container className="mt-5">
             {/* Elemento 1: Título y Botones */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-// ... (código existente sin cambios) ...
+                <h3 className="mb-0 text-primary">
+                    Gestión de Solicitudes <span className="text-muted">({solicitudesFiltradas.length} encontradas)</span>
+                </h3>
+                
+                <Stack direction="horizontal" gap={2}>
+                    <Button 
+                        variant="outline-primary" 
+                        onClick={fetchSolicitudes} 
+                        disabled={loading}
+                        title="Recargar datos desde Google Sheets"
+                    >
+                        {loading 
+                            ? <Spinner as="span" animation="border" size="sm" /> 
+                            : <ArrowClockwise size={20} />
+                        }
+                    </Button>
+                    <Link to="/dashboard">
+                        <Button variant="outline-secondary">
+                            Volver al Panel
+                        </Button>
+                    </Link>
+                </Stack>
             </div>
 
             {/* Fila de Buscador y Filtros */}
             <Row className="mb-4 p-3 bg-light rounded shadow-sm">
-// ... (código existente sin cambios) ...
+                <Col md={7}>
+                    <Form.Group controlId="filtroBusqueda">
+                        <Form.Label>Buscar por Cliente</Form.Label>
+                        <InputGroup>
+                            <InputGroup.Text><Search /></InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Escriba el nombre del cliente..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </InputGroup>
+                    </Form.Group>
+                </Col>
+                <Col md={5}>
+                    <Form.Group controlId="filtroEstado">
+                        <Form.Label>Filtrar por Estado</Form.Label>
+                        <Form.Select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="TODOS">-- Mostrar Todos los Estados --</option>
+                            {estadosValidos.map(estado => (
+                                <option key={estado} value={estado}>{estado}</option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                </Col>
             </Row>
 
 
@@ -116,26 +267,90 @@ const Solicitudes = () => {
             <Table striped bordered hover responsive className="shadow-sm">
                 <thead>
                     <tr className="table-dark">
-{/* ... (código existente sin cambios) ... */}
+                        <th>#</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Categoría</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {/* MODIFICADO: Mapea sobre 'solicitudesFiltradas' */}
                     {solicitudesFiltradas.length > 0 ? (
                         solicitudesFiltradas.map((solicitud, index) => {
-// ... (código existente sin cambios) ...
+                            const isEditing = editingRowId === solicitud.id;
+                            
+                            return (
+                                <tr key={solicitud.id}>
+                                    <td>{index + 1}</td> 
+                                    <td>{solicitud.marca_temporal || 'N/A'}</td> 
+                                    <td>{solicitud.nombre_apellido || 'N/A'}</td>
+                                    <td>{solicitud.telefono || 'N/A'}</td>
+                                    <td>{solicitud.direccion || 'N/A'}</td>
+                                    <td>{solicitud.categoria_trabajo || 'N/A'}</td>
                                     
-                                    {/* COLUMNA ACCIÓN (Botones) */}
                                     <td>
                                         {isEditing ? (
-                                            // ---------------- MODO EDICIÓN ----------------
+                                            <Form.Control
+                                                type="text" 
+                                                size="sm"
+                                                value={solicitud.monto_cotizado || ''}
+                                                onChange={(e) => handleMontoChange(solicitud.id, e.target.value)}
+                                                autoComplete="off"
+                                            />
+                                        ) : (
+                                            solicitud.monto_cotizado ? `$${solicitud.monto_cotizado}` : 'N/A'
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        {isEditing ? (
+                                            <Form.Select
+                                                size="sm"
+                                                value={solicitud.estado || 'PENDIENTE'}
+                                                onChange={(e) => handleEstadoChange(solicitud.id, e.target.value)} 
+                                                autoComplete="off"
+                                            >
+                                                {estadosValidos.map(estado => (
+                                                    <option key={estado} value={estado}>{estado}</option>
+                                                ))}
+                                            </Form.Select>
+                                        ) : (
+                                            <Button 
+                                                variant={getStatusVariant(solicitud.estado)} 
+                                                size="sm"
+                                                className="fw-bold"
+                                            >
+                                                {solicitud.estado || 'PENDIENTE'}
+                                            </Button>
+                                        )}
+                                    </td>
+                                    
+                                    <td>
+                                        {isEditing ? (
                                             <Stack direction="horizontal" gap={2}>
-{/* ... (código existente sin cambios) ... */}
+                                                <Button 
+                                                    variant="success" 
+                                                    size="sm" 
+                                                    onClick={() => handleSaveClick(solicitud)}
+                                                    title="Guardar"
+                                                >
+                                                    <SaveFill />
+                                                </Button>
+                                                <Button 
+                                                    variant="danger" 
+                                                    size="sm" 
+                                                    onClick={() => handleCancelClick(solicitud.id)}
+                                                    title="Cancelar"
+                                                >
+                                                    <XCircleFill />
+                                                </Button>
                                             </Stack>
                                         ) : (
-                                            // ---------------- MODO LECTURA ----------------
                                             <Stack direction="horizontal" gap={2}>
-                                                {/* ✅ NUEVO: Botón de Ver Detalles (Ojo) */}
                                                 <Button 
                                                     variant="outline-info" 
                                                     size="sm" 
@@ -147,12 +362,18 @@ const Solicitudes = () => {
 
                                                 <Button 
                                                     variant="outline-primary" 
-{/* ... (código existente sin cambios) ... */}
+                                                    size="sm" 
+                                                    onClick={() => handleEditClick(solicitud)}
+                                                    title="Editar Estado y Monto"
+                                                >
+                                                    <PencilFill />
                                                 </Button>
                                                 
                                                 <Button 
                                                     variant="outline-success" 
-{/* ... (código existente sin cambios) ... */}
+                                                    size="sm" 
+                                                    onClick={() => handleCotizarClick(solicitud)}
+                                                    title="Cotizar / Ver Detalle PDF"
                                                 >
                                                     $
                                                 </Button>
@@ -163,15 +384,19 @@ const Solicitudes = () => {
                             );
                         })
                     ) : (
-// ... (código existente sin cambios) ...
+                        <tr>
+                            <td colSpan="9" className="text-center text-muted">
+                                No se encontraron solicitudes que coincidan con los filtros.
+                            </td>
+                        </tr>
                     )}
                 </tbody>
             </Table>
             
             {/* Elemento 3: Alerta de Cero Solicitudes */}
-{/* ... (código existente sin cambios) ... */}
+            {solicitudes.length === 0 && !loading && <Alert variant="info" className="text-center">No hay solicitudes para mostrar.</Alert>}
 
-            {/* ✅ NUEVO: Modal de Ver Detalles */}
+            {/* ✅ CORRECCIÓN: Modal movido DENTRO del Container raíz */}
             {selectedSolicitud && (
                 <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
                     <Modal.Header closeButton>
@@ -187,7 +412,6 @@ const Solicitudes = () => {
                             </ListGroup.Item>
                             <ListGroup.Item>
                                 <strong>Teléfono:</strong> 
-                                {/* Enlace de WhatsApp (limpia caracteres no numéricos) */}
                                 <a href={`https://wa.me/${selectedSolicitud.telefono.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer">
                                     {selectedSolicitud.telefono}
                                 </a>
@@ -209,7 +433,6 @@ const Solicitudes = () => {
                             </ListGroup.Item>
                             <ListGroup.Item>
                                 <strong className="d-block">Descripción del Problema:</strong>
-                                {/* 'pre-wrap' respeta los saltos de línea y espacios */}
                                 <p style={{ whiteSpace: 'pre-wrap', backgroundColor: '#f8f9fa', padding: '10px', borderRadius: '5px', marginTop: '5px' }}>
                                     {selectedSolicitud.descripcion_problema || 'No hay descripción.'}
                                 </p>
@@ -223,7 +446,6 @@ const Solicitudes = () => {
                     </Modal.Footer>
                 </Modal>
             )}
-
         </Container>
     );
 };
