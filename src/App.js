@@ -7,12 +7,12 @@ import { useAuth } from './AuthContext';
 import './App.css';
 
 // 1. Importamos los componentes de la interfaz
-// (Usando los nombres de archivo que Vercel espera, ej. 'login.js', 'solicitudes.js')
 import Login from './components/login'; 
 import Dashboard from './components/Dashboard';
 import Solicitudes from './components/solicitudes'; 
-// 🌟 ¡NUEVA IMPORTACIÓN!
 import SolicitudForm from './components/SolicitudForm'; 
+// 🌟 ¡NUEVA IMPORTACIÓN!
+import Cotizacion from './components/Cotizacion'; 
 
 // 2. Definición del componente PrivateRoute (Guardia de Ruta)
 const PrivateRoute = ({ children }) => {
@@ -37,7 +37,7 @@ function App() {
                 {/* Ruta pública: Login (ruta en minúsculas) */}
                 <Route path="/login" element={<Login />} />
 
-                {/* 🌟 ¡NUEVA RUTA PÚBLICA! 🌟 */}
+                {/* Ruta pública: Solicitar */}
                 <Route path="/solicitar" element={<SolicitudForm />} />
                 
                 {/* Ruta Privada: Dashboard (Protegida) */}
@@ -56,6 +56,16 @@ function App() {
                     element={
                         <PrivateRoute>
                             <Solicitudes />
+                        </PrivateRoute>
+                    }
+                />
+
+                {/* 🌟 ¡NUEVA RUTA PRIVADA! 🌟 */}
+                <Route
+                    path="/cotizar/:id"
+                    element={
+                        <PrivateRoute>
+                            <Cotizacion />
                         </PrivateRoute>
                     }
                 />
