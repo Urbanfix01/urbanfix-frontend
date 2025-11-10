@@ -1,11 +1,15 @@
 // src/components/Cotizacion.js
 // Esta es la nueva "pestaña" para crear y editar cotizaciones.
 
-import React, 'react';
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Row, Col, Card, Form, Button, InputGroup, Table, Alert, Spinner } from 'react-bootstrap';
+// ✅ 1. 'Stack' FUE AÑADIDO AL FINAL DE ESTA LÍNEA
+import { Container, Row, Col, Card, Form, Button, InputGroup, Table, Alert, Spinner, Stack } from 'react-bootstrap';
+// ✅ 2. ESTA LÍNEA FUE AÑADIDA
+import { XCircleFill } from 'react-bootstrap-icons';
+
 // Importamos la librería de PDF
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -276,7 +280,7 @@ const Cotizacion = () => {
                                                 />
                                             </InputGroup>
                                         </Col>
-                                        <Col md={1}>
+                                        <Col md={1G}>
                                             <Button variant="danger" size="sm" onClick={() => handleRemoveItem(index)}>
                                                 <XCircleFill />
                                             </Button>
