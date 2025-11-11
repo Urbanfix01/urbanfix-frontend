@@ -39,19 +39,21 @@ const Login = () => {
             {/* 1. PANEL SUPERIOR (NARANJA) - Estilo Welcome */}
             <div className="login-header-panel">
                 <div className="text-center p-4 pt-5">
-                    {/* CORRECCIÓN: Eliminamos la clase 'urbanfix-logo-invert' */}
+                    
+                    {/* --- LOGO ELIMINADO ---
                     <img 
                         src='https://placehold.co/200x50/FF8A3D/FFFFFF?text=UrbanFix+Logo' 
                         alt="UrbanFix Logo" 
-                        className="d-block mx-auto mb-3" // Clase 'urbanfix-logo-invert' eliminada
+                        className="d-block mx-auto mb-3"
                     />
+                    --- FIN LOGO ELIMINADO --- */}
+
                     <h1 className="welcome-text mb-2">¡Hola!</h1>
                     <p className="welcome-subtext mb-5">
                         Ingresa como administrador o solicita un presupuesto para comenzar tu proyecto.
                     </p>
                     
                     {/* Botón de acción secundaria (simula "Create Account" de la referencia) */}
-                    {/* Aquí redirigimos directamente a Solicitar Presupuesto para mantener la función */}
                     <Link to="/solicitar">
                         <Button variant="outline-light" size="lg" className="action-button-header">
                             SOLICITAR PRESUPUESTO
