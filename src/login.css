@@ -1,273 +1,302 @@
-/*
- * Archivo: login.css
- * ARCHIVO DE ESTILOS PRINCIPAL
- */
+/* ================================================
+Archivo de Estilos Globales de URBANFIX
+Contiene:
+1. Variables de Color (Branding)
+2. Estilos del Login (Panel Dual)
+3. Estilos del Formulario de Solicitud (Inputs, Radios)
+8. Estilos del Dashboard (Navbar, Tarjetas)
+9. Estilos de la Tabla de Solicitudes
+10. Sobrescritura de Botones Bootstrap
+================================================
+*/
 
-/* ---------------------------------- */
-/* 1. Paleta de Colores (UrbanFix) */
-/* ---------------------------------- */
+/* ---------------------------------
+1. Variables de Color (Branding)
+---------------------------------
+*/
 :root {
-    --uf-primary-dark: #cc5500; /* Naranja oscuro para base de degradado */
-    --uf-primary-light: #FF8A3D; /* Naranja principal del logo */
-    --uf-primary-hover: #ff741a; 
-    --uf-secondary: #3A3B3C; /* Gris oscuro para texto/acento */
-    --uf-text: #34495e;
-    --uf-panel-bg: #f7f7f7; /* Fondo sutil para el panel blanco */
+    /* Naranja principal de la marca (para botones, acentos) */
+    --uf-primary: #FF8A3D; 
+    
+    /* Gris oscuro para texto y cabeceras */
+    --uf-secondary: #3A3B3C; 
+    
+    /* Verde para éxito/completado */
+    --uf-success: #198754; 
+    
+    /* Fondo gris claro para el panel de admin */
+    --uf-light-bg: #f8f9fa;
 }
 
-/* ---------------------------------- */
-/* 2. Contenedor de la Página (Público) */
-/* ---------------------------------- */
 
+/* ---------------------------------
+2. Estilos del Login (Panel Dual)
+y Formulario de Solicitud
+---------------------------------
+*/
+
+/* Contenedor de la página (fondo degradado) */
 .login-page-container {
-    background: linear-gradient(135deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
     min-height: 100vh;
-    padding: 0;
-    margin: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background: linear-gradient(45deg, var(--uf-primary) 0%, #ffc107 100%);
 }
-/* Padding vertical para el formulario de solicitud (para scrolling) */
-.login-page-container.py-5 {
-    padding-top: 3rem !important;
-    padding-bottom: 3rem !important;
-}
 
-
-/* ---------------------------------- */
-/* 3. Tarjeta de Login (Card) */
-/* ---------------------------------- */
-
+/* Tarjeta principal (Login y Formulario) */
 .login-card {
-    border-radius: 1.5rem;
+    border-radius: 1.5rem !important; /* 24px */
     border: none;
-    overflow: hidden; 
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1);
-    background-color: white; 
+    overflow: hidden; /* Importante para el diseño dual-panel */
+    background-color: #ffffff;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-/* ---------------------------------- */
-/* 4. PANEL SUPERIOR (NARANJA - LOGIN) */
-/* ---------------------------------- */
-
+/* Panel Naranja Superior (Solo Login) */
 .login-header-panel {
-    background: linear-gradient(160deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
+    background: var(--uf-primary);
+    background: linear-gradient(25deg, var(--uf-primary) 0%, #ffa55f 100%);
     color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    text-align: center;
 }
 
-.welcome-text {
-    font-size: 2.5rem;
+/* Título ¡Hola! */
+.welcome-title {
     font-weight: 700;
-    margin-top: 1rem;
+    font-size: 2.5rem; /* 40px */
 }
-
+/* Subtítulo */
 .welcome-subtext {
+    font-weight: 300;
     font-size: 1rem;
-    max-width: 80%;
-    margin-left: auto;
-    margin-right: auto;
     opacity: 0.9;
 }
 
-.action-button-header {
-    border: 2px solid white;
+/* Botón "Solicitar Presupuesto" (Outline Blanco) */
+.btn-outline-light-uf {
+    border-width: 2px !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
     color: white !important;
-    background-color: transparent !important;
-    border-radius: 9999px; /* Píldora */
-    font-weight: 600;
-    padding: 0.75rem 2rem;
-    transition: all 0.3s;
+    font-weight: 600 !important;
+    padding: 0.6rem 1.5rem !important;
+    border-radius: 50px !important; /* Pill shape */
+    transition: all 0.3s ease;
 }
-
-.action-button-header:hover {
+.btn-outline-light-uf:hover {
     background-color: white !important;
-    color: var(--uf-primary-dark) !important;
+    color: var(--uf-primary) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* ---------------------------------- */
-/* 5. PANEL INFERIOR (FORMULARIO - LOGIN) */
-/* ---------------------------------- */
-
+/* Panel Blanco Inferior (Formulario Login) */
 .login-form-panel {
-    background-color: white;
-    padding-top: 4rem !important;
-    padding-bottom: 4rem !important; 
+    background-color: #ffffff;
 }
 
+/* Título "ACCESO ADMINISTRADOR" */
 .user-login-title {
     color: var(--uf-secondary);
-    font-weight: 600;
-    font-size: 1.5rem;
-    border-bottom: 2px solid var(--uf-primary-dark);
-    display: inline-block;
-    padding-bottom: 0.5rem;
-    margin-bottom: 2.5rem !important;
-}
-
-.form-label-custom {
-    color: var(--uf-secondary);
-    font-weight: 500;
-}
-
-/* ---------------------------------- */
-/* 6. ESTILOS DE FORMULARIO COMPARTIDOS */
-/* ---------------------------------- */
-
-.form-section-title {
-    color: var(--uf-primary-dark);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.25rem;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 0.5rem;
-    margin-top: 1.5rem; 
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--uf-primary);
+    padding-bottom: 8px;
+    display: inline-block; /* Para que el borde se ajuste al texto */
+}
+
+/* Link "Olvidaste tu contraseña" */
+.forgot-password-link {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+.forgot-password-link:hover {
+    color: var(--uf-primary);
+    text-decoration: underline;
+}
+
+
+/* ---------------------------------
+3. Estilos del Formulario de Solicitud
+---------------------------------
+*/
+
+/* Títulos de Sección (Datos, Detalles, etc.) */
+.form-section-title {
+    color: var(--uf-secondary);
+    font-weight: 600;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
     margin-bottom: 1.5rem !important;
 }
 
-.form-control-lg,
-.form-select-lg {
-    border-radius: 0.5rem !important;
-    padding: 0.75rem 1rem !important;
-    border-width: 2px;
-}
-
-.form-control-lg:focus,
-.form-select-lg:focus {
-    border-color: var(--uf-primary-light) !important; 
-    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important; 
-}
-
-.form-check-input:checked {
-    background-color: var(--uf-primary-light);
-    border-color: var(--uf-primary-light);
-}
-
-.form-check-input:focus {
-    border-color: var(--uf-primary-light);
-    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25);
-}
-
-.form-check {
-    padding-left: 2.25em; 
-    margin-bottom: 0.5rem;
-}
-
-.form-check-label {
-    padding-top: 0.15em;
-}
-
-
-/* ---------------------------------- */
-/* 7. BOTONES Y LINKS (COMPARTIDOS) */
-/* ---------------------------------- */
-
-.login-button-uf {
-    background-color: var(--uf-primary-light);
-    border-color: var(--uf-primary-light);
-    border-radius: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-    margin-top: 1.5rem; 
-}
-
-.login-button-uf:hover,
-.login-button-uf:focus {
-    background-color: var(--uf-primary-dark);
-    border-color: var(--uf-primary-dark);
-    box-shadow: 0 8px 15px rgba(255, 138, 61, 0.3); 
-}
-
-.forgot-password-link {
-    color: var(--uf-secondary);
+/* Etiquetas personalizadas (Labels) */
+.form-label-custom {
     font-size: 0.9rem;
-    text-decoration: none;
-    opacity: 0.8;
-}
-
-.forgot-password-link:hover {
-    color: var(--uf-primary-light);
-    opacity: 1;
-}
-
-/* ---------------------------------- */
-/* 8. DASHBOARD STYLES (NUEVO) */
-/* ---------------------------------- */
-
-/* Fondo del área de contenido del dashboard (gris claro) */
-.dashboard-content {
-    background-color: #f8f9fa; /* Un gris muy claro de Bootstrap */
-    min-height: calc(100vh - 56px); /* 100% de la altura menos la navbar (56px es la altura estándar) */
-}
-
-/* Título principal del Dashboard (h1) */
-.dashboard-title {
-    color: var(--uf-secondary);
-    font-weight: 700;
-}
-
-/* Barra de Navegación Naranja */
-.dashboard-navbar {
-    background: linear-gradient(135deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.logout-button-uf {
-    border-radius: 9999px !important; /* Píldora */
     font-weight: 600;
+    color: var(--uf-primary); /* Color naranja */
+}
+
+/* Estilos de Foco para Inputs, Selects y Textareas */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--uf-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important;
+}
+
+/* Estilos de Foco para Radios y Checkboxes */
+.form-check-input:checked {
+    background-color: var(--uf-primary) !important;
+    border-color: var(--uf-primary) !important;
+}
+.form-check-input:focus {
+    border-color: var(--uf-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important;
+}
+
+
+/* ---------------------------------
+8. Estilos del Dashboard
+---------------------------------
+*/
+
+/* Navbar del Admin (Naranja) */
+.dashboard-navbar {
+    background-color: var(--uf-primary) !important;
+    background: linear-gradient(90deg, var(--uf-primary) 0%, #ffa55f 100%) !important;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Botón de Logout */
+.logout-button-uf {
     border-width: 2px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
 }
 .logout-button-uf:hover {
     background-color: white !important;
-    color: var(--uf-primary-dark) !important;
+    color: var(--uf-primary) !important;
 }
 
+/* Contenedor principal del contenido del Dashboard (Fondo Gris) */
+.dashboard-content {
+    background-color: var(--uf-light-bg);
+    min-height: calc(100vh - 74px); /* 100% alto menos la navbar */
+}
 
-/* Tarjetas de Estadísticas */
+/* Título principal H1 del Dashboard */
+.dashboard-title {
+    font-weight: 700;
+    color: var(--uf-secondary);
+    font-size: 2.25rem;
+}
+
+/* Tarjetas de Estadísticas (Base) */
 .stat-card {
-    border-radius: 0.75rem;
-    border: none;
-    border-left: 5px solid; /* Borde de color distintivo */
-    text-align: center;
+    border-radius: 0.75rem !important; /* 12px */
+    border: 1px solid #e9ecef;
+    border-left-width: 6px !important; /* Borde izquierdo grueso */
     transition: all 0.3s ease;
 }
-
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
 }
-
-.stat-card-number {
-    font-size: 2.75rem;
+.stat-card .stat-card-number {
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    font-size: 3rem; /* 48px */
 }
-
-.stat-card-title {
+.stat-card .stat-card-title {
+    font-weight: 600;
+    color: #6c757d;
     text-transform: uppercase;
     font-size: 0.8rem;
-    font-weight: 600;
     letter-spacing: 0.5px;
-    color: #6c757d; /* text-muted */
-    margin-bottom: 0;
 }
 
-/* Variantes de color de las tarjetas */
+/* Colores de Tarjetas de Estadísticas */
 .stat-card.pending {
-    border-left-color: var(--uf-primary-light);
+    border-left-color: var(--uf-primary) !important;
 }
 .stat-card.pending .stat-card-number {
-    color: var(--uf-primary-light);
+    color: var(--uf-primary);
 }
 
 .stat-card.completed {
-    border-left-color: #198754; /* success */
+    border-left-color: var(--uf-success) !important;
 }
 .stat-card.completed .stat-card-number {
-    color: #198754;
+    color: var(--uf-success);
 }
 
 .stat-card.total {
-    border-left-color: var(--uf-secondary);
+    border-left-color: var(--uf-secondary) !important;
 }
 .stat-card.total .stat-card-number {
     color: var(--uf-secondary);
+}
+
+
+/* ---------------------------------
+9. Estilos de la Tabla de Solicitudes
+---------------------------------
+*/
+
+/* Cabecera de la Tabla (Gris Oscuro) */
+.uf-table-header {
+    background-color: var(--uf-secondary) !important;
+    color: white;
+}
+.uf-table-header th {
+    /* Sobrescribe el color de texto si es necesario */
+    color: white !important;
+}
+
+
+/* ---------------------------------
+10. Sobrescritura de Botones Bootstrap
+(Define Naranja como 'primary')
+---------------------------------
+*/
+
+/* Botón Sólido (Principal) */
+.btn-primary {
+    background-color: var(--uf-primary) !important;
+    border-color: var(--uf-primary) !important;
+    font-weight: 600 !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: #e67329 !important; /* Naranja más oscuro */
+    border-color: #e67329 !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.5) !important;
+}
+.btn-primary:disabled {
+    background-color: #ffb58a !important;
+    border-color: #ffb58a !important;
+}
+
+/* Botón Outline (Secundario) */
+.btn-outline-primary {
+    color: var(--uf-primary) !important;
+    border-color: var(--uf-primary) !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    background-color: var(--uf-primary) !important;
+    color: white !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.5) !important;
 }
