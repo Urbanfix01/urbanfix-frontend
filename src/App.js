@@ -9,7 +9,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext'; 
 
 // Importación del componente de layout (Header) con el logo
-import Header from './components/Header'; // <--- Asegúrate de que esta ruta sea correcta
+// import Header from './components/Header'; // <-- COMENTADO O ELIMINADO
 
 import './App.css';
 import './login.css'; 
@@ -40,18 +40,14 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
     // Lógica para mostrar/ocultar el Header
-    const { currentUser, loading } = useAuth(); // Usamos el hook de autenticación
+    // const { currentUser, loading } = useAuth(); // Ya no es necesario aquí
     
-    if (loading) {
-        return <p className="loading-message">Cargando la aplicación...</p>;
-    }
-
-    const shouldShowHeader = currentUser; 
-
+    // La lógica de carga queda solo en PrivateRoute, aquí solo queda el router
+    
     return (
         <div className="App">
             {/* Si el usuario está autenticado, mostramos el encabezado con el logo */}
-            {shouldShowHeader && <Header />} 
+            {/* {shouldShowHeader && <Header />} */} {/* <-- COMENTADO O ELIMINADO */}
             
             <Routes>
                 
