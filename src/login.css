@@ -1,0 +1,109 @@
+/*
+ * Archivo: login.css
+ * Paleta actualizada para coincidir con el logo UrbanFix (Naranja y Gris Oscuro)
+ */
+
+/* ---------------------------------- */
+/* 1. Paleta de Colores (UrbanFix) */
+/* ---------------------------------- */
+:root {
+    --uf-primary: #FF8A3D; /* Naranja principal del logo */
+    --uf-primary-hover: #ff741a; /* Naranja más oscuro para hover */
+    --uf-secondary: #3A3B3C; /* Gris oscuro para texto/acento */
+    --uf-secondary-hover: #292a2b;
+    --uf-text: #34495e;
+    --uf-green: #38a169; /* Mantenemos el verde para "Solicitar Presupuesto" (acción de conversión) */
+    --uf-green-hover: #2f855a;
+}
+
+/* ---------------------------------- */
+/* 2. Contenedor de la Página */
+/* ---------------------------------- */
+
+.login-page-container {
+    /* Fondo degradado suave (gris claro a blanco roto) */
+    background: linear-gradient(135deg, #f9f9f9 0%, #eef1f6 100%);
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+/* ---------------------------------- */
+/* 3. Tarjeta de Login (Card) */
+/* ---------------------------------- */
+
+.login-card {
+    border-radius: 1.5rem;
+    border: 1px solid #c3cfe2;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+}
+
+/* Logo Styling */
+.urbanfix-logo {
+    max-width: 100%;
+    height: auto;
+    /* Opción: si quieres un margen inferior distinto */
+    /* margin-bottom: 1.5rem; */
+}
+
+
+/* ---------------------------------- */
+/* 4. Tipografía y Encabezado */
+/* ---------------------------------- */
+
+/* Como eliminamos el H2, podemos usar este espacio para refinar otros textos si es necesario */
+/* Por ejemplo, hacer los labels de formulario un poco más oscuros */
+.form-label {
+    color: var(--uf-secondary);
+}
+
+
+/* ---------------------------------- */
+/* 5. Estilos de Botones Personalizados */
+/* ---------------------------------- */
+
+/* Botón principal (Iniciar Sesión - Admin) - Ahora NARANJA */
+.login-button {
+    background-color: var(--uf-primary);
+    border-color: var(--uf-primary);
+    border-radius: 0.75rem;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.login-button:hover,
+.login-button:focus {
+    background-color: var(--uf-primary-hover);
+    border-color: var(--uf-primary-hover);
+    box-shadow: 0 4px 10px rgba(255, 138, 61, 0.4); /* Sombra naranja */
+}
+
+/* Botón secundario (Solicitar Presupuesto) - Mantenemos verde para diferenciación */
+.request-button {
+    color: var(--uf-green) !important;
+    border-color: var(--uf-green) !important;
+    border-radius: 0.75rem;
+    background-color: transparent !important;
+    transition: all 0.2s;
+}
+
+.request-button:hover {
+    background-color: var(--uf-green) !important; 
+    color: #ffffff !important; 
+    border-color: var(--uf-green-hover) !important;
+}
+
+/* ---------------------------------- */
+/* 6. Campos de Formulario */
+/* ---------------------------------- */
+
+.form-control-lg {
+    border-radius: 0.5rem !important;
+}
+
+.form-control-lg:focus {
+    border-color: var(--uf-primary); /* Foco NARANJA */
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important; /* Sombra de foco NARANJA */
+}
