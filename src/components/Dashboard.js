@@ -3,10 +3,11 @@
 // 🌟 Importaciones añadidas: useState, useEffect, axios
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// 🛑 ELIMINADO: import { useAuth } from '../AuthContext'; 
-// 🛑 ELIMINADO: import { useNavigate } from 'react-router-dom'; 
-import { Link, useLocation } from 'react-router-dom'; // Se mantiene Link y useLocation
+import { Link, useLocation } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap'; 
+
+// 🌟 Importamos el nuevo archivo CSS para el Dashboard
+import '../dashboard.css'; 
 
 // 🌟 CAMBIO 1: URL de API actualizada
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -49,7 +50,7 @@ const Dashboard = () => {
     };
 
     return (
-        // 🌟 Usamos React.Fragment (o <>) para no añadir un div innecesario
+        // Usamos React.Fragment (o <>) para no añadir un div innecesario
         <>
             <div className="dashboard-content">
                 <Container className="py-5">
@@ -92,7 +93,7 @@ const Dashboard = () => {
                             <Card className="shadow-sm stat-card total">
                                 <Card.Body>
                                     <h2 className="stat-card-number">{renderStat(summary.total)}</h2>
-                                    {/* 🌟 CORRECCIÓN DE SINTAXIS: </O> cambiado a </p> */}
+                                    {/* CORRECCIÓN DE SINTAXIS: </O> cambiado a </p> */}
                                     <p className="stat-card-title">TOTALES CREADAS</p>
                                 </Card.Body>
                             </Card>

@@ -10,7 +10,7 @@ function AdminHeader() {
     const { currentUser } = useAuth(); 
     const navigate = useNavigate();
     
-    // Función de Cerrar Sesión (MIGRADA desde Dashboard)
+    // Función de Cerrar Sesión
     const handleLogout = async () => {
         try {
             await signOut(auth);
@@ -20,31 +20,31 @@ function AdminHeader() {
         }
     };
 
-    // Si el usuario no está logueado, no renderiza nada (ya que App.js lo llamará condicionalmente)
     if (!currentUser) {
         return null;
     }
 
     return (
-        // Usamos la clase de la barra naranja que ya tenías
+        // Estilos de la barra naranja (background-color)
         <Navbar expand="lg" className="dashboard-navbar" data-bs-theme="dark" style={{ backgroundColor: '#ff7f41' }}>
             <Container fluid className="px-4">
                 
                 {/* 1. Logo y Título de Marca */}
-                <Navbar.Brand href="/dashboard" className="d-flex align-items-center">
+                <Navbar.Brand as={Link} to="/dashboard" className="d-flex align-items-center me-4">
                     <img 
-                        src="/logo.png" 
+                        src="/logo_blanco.png" // <-- RUTA ACTUALIZADA PARA EL LOGO BLANCO
                         alt="Urbanfix Logo" 
-                        style={{ height: '35px', marginRight: '10px' }} 
+                        style={{ height: '35px' }} 
                     />
                     {/* Texto Admin (Opcional, si quieres que se vea) */}
-                    <span className="fw-bold text-light">Admin</span> 
+                    <span className="fw-bold text-light ms-2">Admin</span> 
                 </Navbar.Brand>
 
-                {/* 2. Enlaces de Navegación (Dashboard y Solicitudes) */}
+                {/* 2. Enlaces de Navegación */}
                 <Navbar.Toggle aria-controls="admin-navbar-nav" />
                 <Navbar.Collapse id="admin-navbar-nav">
-                    <Nav className="me-auto"> {/* 'me-auto' mueve los enlaces a la izquierda */}
+                    <Nav className="me-auto"> 
+                        {/* Se usa Nav.Link as={Link} para una navegación fluida con React Router */}
                         <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
                         <Nav.Link as={Link} to="/solicitudes">Solicitudes</Nav.Link>
                     </Nav>
