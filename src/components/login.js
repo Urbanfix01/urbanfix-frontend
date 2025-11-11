@@ -1,12 +1,11 @@
 // src/components/Login.js
 import React, { useRef, useState } from 'react';
-// CORRECCIÓN FINAL DE RUTA: Intentamos la forma estándar sin extensión
-import { auth } from '../firebase'; 
+// CORRECCIÓN FINAL DE RUTA: Intentamos la forma estándar con extensión
+import { auth } from '../firebase.js'; 
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert, Stack } from 'react-bootstrap'; 
-// Importamos el logo para usarlo en el header
-import logo from '../assets/urbanfix-logo-placeholder.png'; // 
+// ELIMINADA: import logo from '../assets/urbanfix-logo-placeholder.png'; // La línea que causaba el fallo
 
 const Login = () => {
   const emailRef = useRef();
@@ -41,7 +40,7 @@ const Login = () => {
             {/* 1. PANEL SUPERIOR (NARANJA) - Estilo Welcome */}
             <div className="login-header-panel">
                 <div className="text-center p-4 pt-5">
-                    {/* Reemplazamos el H2 por el logo para branding */}
+                    {/* Usamos la URL directa para evitar el fallo de importación */}
                     <img 
                         src='https://placehold.co/200x50/FF8A3D/FFFFFF?text=UrbanFix+Logo' 
                         alt="UrbanFix Logo" 
