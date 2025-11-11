@@ -2,21 +2,20 @@
 // Componente principal de la aplicación que maneja las rutas.
 
 import React from 'react';
-// IMPORTACIONES DE REACT ROUTER DOM (Estas faltaban y causaron el error)
+// IMPORTACIONES DE REACT ROUTER DOM 
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Importación del hook de autenticación
 import { useAuth } from './AuthContext'; 
 
-// Importación del componente de layout (Header) con el logo
-// import Header from './components/Header'; // <-- COMENTADO O ELIMINADO
+// Importación del componente de Encabezado centralizado
+import AdminHeader from './components/Header'; 
 
 import './App.css';
 import './login.css'; 
 
 
 // 1. Importamos los componentes de la interfaz
-// Volvemos a la importación estándar sin extensión y usando PascalCase
 import Login from './components/login'; 
 import Dashboard from './components/Dashboard'; 
 import Solicitudes from './components/solicitudes'; 
@@ -33,21 +32,19 @@ const PrivateRoute = ({ children }) => {
         return <p className="loading-message">Cargando...</p>;
     }
 
-    // Si el usuario existe, muestra el componente hijo (Dashboard)
+    // Si el usuario existe, muestra el componente hijo
     // Si no está logueado, redirige a /login
     return currentUser ? children : <Navigate to="/login" replace />;
 };
 
 function App() {
     // Lógica para mostrar/ocultar el Header
-    // const { currentUser, loading } = useAuth(); // Ya no es necesario aquí
-    
-    // La lógica de carga queda solo en PrivateRoute, aquí solo queda el router
+    const { currentUser } = useAuth(); 
     
     return (
         <div className="App">
-            {/* Si el usuario está autenticado, mostramos el encabezado con el logo */}
-            {/* {shouldShowHeader && <Header />} */} {/* <-- COMENTADO O ELIMINADO */}
+            {/* Si el usuario está autenticado, mostramos el encabezado centralizado */}
+            {currentUser && <AdminHeader />} 
             
             <Routes>
                 
