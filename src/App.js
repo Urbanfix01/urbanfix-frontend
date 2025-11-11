@@ -1,81 +1,57 @@
-// src/App.js
-// Componente principal de la aplicación que maneja las rutas.
-
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; 
-import './App.css';
-
-// 1. Importamos los componentes de la interfaz
-import Login from './components/login'; 
-import Dashboard from './components/Dashboard';
-import Solicitudes from './components/solicitudes'; 
-import SolicitudForm from './components/SolicitudForm'; 
-// 🌟 ¡NUEVA IMPORTACIÓN!
-import Cotizacion from './components/Cotizacion'; 
-
-// 2. Definición del componente PrivateRoute (Guardia de Ruta)
-const PrivateRoute = ({ children }) => {
-    // Obtenemos el estado de autenticación
-    const { currentUser, loading } = useAuth();
-    
-    // Muestra un estado de carga mientras Firebase verifica el usuario
-    if (loading) {
-        return <p className="loading-message">Cargando...</p>;
-    }
-
-    // Si el usuario existe, muestra el componente hijo (Dashboard)
-    // Si no está logueado, redirige a /login
-    return currentUser ? children : <Navigate to="/login" replace />;
-};
-
-function App() {
-    return (
-        <div className="App">
-            <Routes>
-                
-                {/* Ruta pública: Login (ruta en minúsculas) */}
-                <Route path="/login" element={<Login />} />
-
-                {/* Ruta pública: Solicitar */}
-                <Route path="/solicitar" element={<SolicitudForm />} />
-                
-                {/* Ruta Privada: Dashboard (Protegida) */}
-                <Route 
-                    path="/dashboard" 
-                    element={
-                        <PrivateRoute>
-                            <Dashboard />
-                        </PrivateRoute>
-                    } 
-                />
-                
-                {/* Ruta Privada: Solicitudes (Protegida) */}
-                <Route
-                    path="/solicitudes"
-                    element={
-                        <PrivateRoute>
-                            <Solicitudes />
-                        </PrivateRoute>
-                    }
-                />
-
-                {/* 🌟 ¡NUEVA RUTA PRIVADA! 🌟 */}
-                <Route
-                    path="/cotizar/:id"
-                    element={
-                        <PrivateRoute>
-                            <Cotizacion />
-                        </PrivateRoute>
-                    }
-                />
-                
-                {/* Redirección: Si alguien va a la raíz, lo enviamos al dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                
-            </Routes>
-        </div>
-    );
+/* Estilos existentes (si tienes alguno) */
+.loading-message {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 1.2rem;
 }
 
-export default App;
+/* --- ✅ NUEVOS ESTILOS PARA EL LOGIN --- */
+
+.login-page-wrapper {
+  overflow: hidden; /* Evita barras de scroll innecesarias */
+  background-color: #f8f9fa; /* Color de fondo para el lado del formulario */
+}
+
+/* Columna Izquierda (Branding) */
+.login-branding-side {
+  /* Un gradiente azul oscuro */
+  background: linear-gradient(135deg, #0d6efd 30%, #0a58ca 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.login-logo {
+  max-width: 150px;
+  height: auto;
+  border-radius: 50%; /* Asume que el logo es circular o cuadrado */
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Columna Derecha (Formulario) */
+.login-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px; /* Ancho máximo del formulario */
+  border-radius: 1rem; /* Bordes redondeados */
+}
+
+/* Ajustes de Bootstrap */
+.input-group .form-control {
+  border-left: 0;
+}
+.input-group .input-group-text {
+  background-color: white;
+  border-right: 0;
+}
