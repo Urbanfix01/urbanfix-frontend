@@ -108,12 +108,16 @@ const SolicitudForm = () => {
     };
 
     return (
-        <Container className="mt-5">
-            <Row className="justify-content-center">
-                <Col md={10} lg={8}>
-                    <Card className="shadow-lg p-4">
-                        <Card.Body>
-                            <h2 className="text-center mb-4 text-primary">Solicitar Presupuesto</h2>
+        // 1. APLICAMOS EL FONDO DEGRADADO Y CENTRADO
+        <Container fluid className="login-page-container d-flex align-items-center justify-content-center py-5">
+            <Row className="justify-content-center w-100">
+                {/* 2. Ajustamos el ancho para un formulario */}
+                <Col xs={11} sm={10} md={9} lg={8} xl={7}>
+                    {/* 3. APLICAMOS EL ESTILO DE TARJETA DEL LOGIN */}
+                    <Card className="login-card shadow-lg">
+                        <Card.Body className="p-4 p-md-5">
+                            {/* 4. APLICAMOS EL ESTILO DE TÍTULO DEL LOGIN */}
+                            <h2 className="text-center mb-3 user-login-title">Solicitar Presupuesto</h2>
                             <p className="text-center text-muted mb-4">
                                 Complete el formulario y nos pondremos en contacto para coordinar una visita o enviarle una cotización.
                             </p>
@@ -124,36 +128,39 @@ const SolicitudForm = () => {
 
                             <Form onSubmit={handleSubmit}>
                                 {/* ----------------------- SECCIÓN DATOS DE CONTACTO ----------------------- */}
-                                <h5 className="mb-3">Datos de Contacto</h5>
+                                <h5 className="form-section-title">Datos de Contacto</h5>
                                 <Row>
                                     <Col md={6}>
                                         <Form.Group className="mb-3" controlId="formNombre">
-                                            <Form.Label>Nombre y Apellido</Form.Label>
+                                            {/* 5. APLICAMOS ESTILOS DE LABEL E INPUT */}
+                                            <Form.Label className="form-label-custom">Nombre y Apellido</Form.Label>
                                             <Form.Control 
                                                 type="text" 
                                                 name="nombre_apellido"
                                                 value={formData.nombre_apellido}
                                                 onChange={handleChange}
                                                 required 
+                                                size="lg" 
                                             />
                                         </Form.Group>
                                     </Col>
                                     <Col md={6}>
                                         <Form.Group className="mb-3" controlId="formTelefono">
-                                            <Form.Label>Teléfono (WhatsApp)</Form.Label>
+                                            <Form.Label className="form-label-custom">Teléfono (WhatsApp)</Form.Label>
                                             <Form.Control 
                                                 type="text" 
                                                 name="telefono"
                                                 value={formData.telefono}
                                                 onChange={handleChange}
                                                 required 
+                                                size="lg" 
                                             />
                                         </Form.Group>
                                     </Col>
                                 </Row>
 
                                 <Form.Group className="mb-4" controlId="formDireccion">
-                                    <Form.Label>Dirección / Localidad</Form.Label>
+                                    <Form.Label className="form-label-custom">Dirección / Localidad</Form.Label>
                                     <Form.Control 
                                         type="text" 
                                         name="direccion"
@@ -161,19 +168,21 @@ const SolicitudForm = () => {
                                         onChange={handleChange}
                                         placeholder="Ej: Av. Corrientes 1234, Almagro"
                                         required 
+                                        size="lg" 
                                     />
                                 </Form.Group>
 
                                 {/* ----------------------- SECCIÓN PROBLEMA ----------------------- */}
-                                <h5 className="mb-3">Detalles del Trabajo</h5>
+                                <h5 className="form-section-title">Detalles del Trabajo</h5>
                                 
                                 <Form.Group className="mb-3" controlId="formCategoria">
-                                    <Form.Label>Categoría del Trabajo</Form.Label>
+                                    <Form.Label className="form-label-custom">Categoría del Trabajo</Form.Label>
                                     <Form.Select
                                         name="categoria_trabajo"
                                         value={formData.categoria_trabajo}
                                         onChange={handleChange}
                                         required
+                                        size="lg" 
                                     >
                                         <option value="">Seleccione una categoría...</option>
                                         {categorias.map(cat => (
@@ -183,21 +192,22 @@ const SolicitudForm = () => {
                                 </Form.Group>
 
                                 <Form.Group className="mb-4" controlId="formDescripcion">
-                                    <Form.Label>Descripción del Problema</Form.Label>
+                                    <Form.Label className="form-label-custom">Descripción del Problema</Form.Label>
                                     <Form.Control 
                                         as="textarea"
                                         rows={4}
                                         name="descripcion_problema"
                                         value={formData.descripcion_problema}
                                         onChange={handleChange}
-                                        placeholder="Lo más claro posible. Ej: La canilla pierde agua constantemente, necesito instalar 3 tomas de corriente en el living."
+                                        placeholder="Lo más claro posible. Ej: La canilla pierde agua constantemente..."
                                         required
+                                        size="lg" 
                                     />
                                 </Form.Group>
                                 
                                 {/* ----------------------- SECCIÓN URGENCIA (Radio Buttons) ----------------------- */}
                                 <Form.Group className="mb-4" controlId="formUrgencia">
-                                    <Form.Label className="fw-bold">¿QUÉ TAN URGENTE ES?</Form.Label>
+                                    <Form.Label className="form-label-custom fw-bold">¿QUÉ TAN URGENTE ES?</Form.Label>
                                     {opcionesUrgencia.map((opcion, index) => (
                                         <Form.Check
                                             key={index}
@@ -206,7 +216,6 @@ const SolicitudForm = () => {
                                             id={`urgencia-${index}`}
                                             label={opcion}
                                             value={opcion}
-                                            // El checked se basa en el estado actual
                                             checked={formData.urgencia === opcion}
                                             onChange={handleChange}
                                             className="ms-3"
@@ -216,7 +225,7 @@ const SolicitudForm = () => {
 
                                 {/* ----------------------- SECCIÓN HORARIOS (Checkboxes) ----------------------- */}
                                 <Form.Group className="mb-4" controlId="formHorarios">
-                                    <Form.Label className="fw-bold">VENTANAS HORARIAS</Form.Label>
+                                    <Form.Label className="form-label-custom fw-bold">VENTANAS HORARIAS</Form.Label>
                                     <p className="text-muted small mb-2">Seleccione todas las que apliquen:</p>
                                     {opcionesVentanas.map((opcion, index) => (
                                         <Form.Check
@@ -226,7 +235,6 @@ const SolicitudForm = () => {
                                             id={`ventana-${index}`}
                                             label={opcion}
                                             value={opcion}
-                                            // El checked se basa en si el valor está en el array del estado
                                             checked={formData.ventanas_horarias.includes(opcion)}
                                             onChange={handleCheckboxChange}
                                             className="ms-3"
@@ -236,7 +244,8 @@ const SolicitudForm = () => {
 
 
                                 <div className="d-grid gap-3 mt-4">
-                                    <Button variant="primary" type="submit" size="lg" disabled={loading}>
+                                    {/* 6. APLICAMOS EL BOTÓN NARANJA DEL LOGIN */}
+                                    <Button variant="primary" type="submit" size="lg" disabled={loading} className="w-100 login-button-uf">
                                         {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Enviar Solicitud'}
                                     </Button>
                                     <Link to="/login" className="text-center">

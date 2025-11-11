@@ -1,6 +1,6 @@
 /*
  * Archivo: login.css
- * MODIFICADO para implementar el diseño Dual-Panel (similar a la referencia)
+ * AHORA ES EL ARCHIVO DE ESTILOS PRINCIPAL PARA FORMULARIOS Y LOGIN
  */
 
 /* ---------------------------------- */
@@ -25,7 +25,7 @@
     min-height: 100vh;
     padding: 0;
     margin: 0;
-    /* Usamos d-flex en el componente para centrar */
+    /* py-5 (padding vertical) se añade en el formulario para scrolling */
 }
 
 /* ---------------------------------- */
@@ -37,23 +37,17 @@
     border: none;
     overflow: hidden; /* Crucial para que los paneles corten el radio */
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1);
+    background-color: white; /* Aseguramos fondo blanco para el form */
 }
 
 /* ---------------------------------- */
-/* 4. PANEL SUPERIOR (NARANJA) */
+/* 4. PANEL SUPERIOR (NARANJA - LOGIN) */
 /* ---------------------------------- */
 
 .login-header-panel {
     background: linear-gradient(160deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.urbanfix-logo-invert {
-    /* Si tienes un logo claro, úsalo aquí. Si no, invertimos los colores del placeholder */
-    filter: brightness(0) invert(1); 
-    max-width: 180px;
-    height: auto;
 }
 
 .welcome-text {
@@ -87,7 +81,7 @@
 }
 
 /* ---------------------------------- */
-/* 5. PANEL INFERIOR (FORMULARIO) */
+/* 5. PANEL INFERIOR (FORMULARIO - LOGIN) */
 /* ---------------------------------- */
 
 .login-form-panel {
@@ -111,19 +105,61 @@
     font-weight: 500;
 }
 
+/* ---------------------------------- */
+/* 6. ESTILOS DE FORMULARIO COMPARTIDOS (NUEVO) */
+/* ---------------------------------- */
+
+/* Títulos de sección (Ej: "Datos de Contacto") */
+.form-section-title {
+    color: var(--uf-primary-dark);
+    font-weight: 600;
+    font-size: 1.25rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.5rem;
+    margin-top: 1.5rem; /* Espacio entre secciones */
+    margin-bottom: 1.5rem !important;
+}
+
 /* Campos de Formulario (React-Bootstrap) */
-.form-control-lg {
+.form-control-lg,
+.form-select-lg {
     border-radius: 0.5rem !important;
     padding: 0.75rem 1rem !important;
     border-width: 2px;
 }
 
-.form-control-lg:focus {
-    border-color: var(--uf-primary-light); /* Foco NARANJA */
+.form-control-lg:focus,
+.form-select-lg:focus {
+    border-color: var(--uf-primary-light) !important; /* Foco NARANJA */
     box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important; /* Sombra de foco NARANJA */
 }
 
-/* Botón principal (Iniciar Sesión) */
+/* Estilos para Radio y Checkbox (NUEVO) */
+.form-check-input:checked {
+    background-color: var(--uf-primary-light);
+    border-color: var(--uf-primary-light);
+}
+
+.form-check-input:focus {
+    border-color: var(--uf-primary-light);
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25);
+}
+
+.form-check {
+    padding-left: 2.25em; /* Más espacio para el check */
+    margin-bottom: 0.5rem;
+}
+
+.form-check-label {
+    padding-top: 0.15em;
+}
+
+
+/* ---------------------------------- */
+/* 7. BOTONES Y LINKS (COMPARTIDOS) */
+/* ---------------------------------- */
+
+/* Botón principal (Iniciar Sesión / Enviar Solicitud) */
 .login-button-uf {
     background-color: var(--uf-primary-light);
     border-color: var(--uf-primary-light);
