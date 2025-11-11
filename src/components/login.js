@@ -1,11 +1,10 @@
 // src/components/Login.js
 import React, { useRef, useState } from 'react';
-// CORRECCIÓN FINAL DE RUTA: Intentamos la forma estándar con extensión
+// Mantenemos la importación de Firebase que Vercel espera
 import { auth } from '../firebase.js'; 
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert, Stack } from 'react-bootstrap'; 
-// ELIMINADA: import logo from '../assets/urbanfix-logo-placeholder.png'; // La línea que causaba el fallo
 
 const Login = () => {
   const emailRef = useRef();
@@ -26,7 +25,7 @@ const Login = () => {
       );
       navigate('/dashboard'); 
     } catch (err) {
-      // Usamos el mensaje de error de Firebase para mayor claridad
+      // Usamos un mensaje de error genérico para mayor claridad
       setError('Fallo al iniciar sesión. Por favor, verifica tus credenciales.');
     }
   };
@@ -40,11 +39,11 @@ const Login = () => {
             {/* 1. PANEL SUPERIOR (NARANJA) - Estilo Welcome */}
             <div className="login-header-panel">
                 <div className="text-center p-4 pt-5">
-                    {/* Usamos la URL directa para evitar el fallo de importación */}
+                    {/* CORRECCIÓN: Eliminamos la clase 'urbanfix-logo-invert' */}
                     <img 
                         src='https://placehold.co/200x50/FF8A3D/FFFFFF?text=UrbanFix+Logo' 
                         alt="UrbanFix Logo" 
-                        className="urbanfix-logo-invert d-block mx-auto mb-3"
+                        className="d-block mx-auto mb-3" // Clase 'urbanfix-logo-invert' eliminada
                     />
                     <h1 className="welcome-text mb-2">¡Hola!</h1>
                     <p className="welcome-subtext mb-5">
