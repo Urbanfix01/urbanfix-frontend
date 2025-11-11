@@ -5,7 +5,9 @@ import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 // Card, Form, Button, etc. ya están importados
 import { Container, Row, Col, Card, Form, Button, InputGroup, Alert, Spinner, Stack } from 'react-bootstrap';
+// 🌟 Importamos el ícono (asegúrate de haber ejecutado 'npm install react-bootstrap-icons')
 import { XCircleFill } from 'react-bootstrap-icons';
+// 🌟 Importamos los paquetes de PDF (asegúrate de haber ejecutado 'npm install jspdf jspdf-autotable')
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -239,7 +241,8 @@ const Cotizacion = () => {
                                     {/* 3. APLICAMOS EL TÍTULO DEL DASHBOARD */}
                                     <h3 className="dashboard-title">Cotizar Solicitud</h3>
                                     <Link to="/solicitudes">
-                                        <Button variant="secondary">Volver a Solicitudes</Button>
+                                        {/* Botón secundario gris (React-Bootstrap) */}
+                                        <Button variant="secondary" size="lg">Volver a Solicitudes</Button>
                                     </Link>
                                 </div>
 
@@ -271,14 +274,13 @@ const Cotizacion = () => {
                                                 />
                                             </Col>
                                             <Col md={4}>
-                                                <InputGroup>
+                                                <InputGroup size="lg"> {/* InputGroup grande */}
                                                     <InputGroup.Text>$</InputGroup.Text>
                                                     <Form.Control
                                                         type="number"
                                                         placeholder="Precio"
                                                         value={item.precio}
                                                         onChange={(e) => handleItemChange(index, 'precio', e.target.value)}
-                                                        size="lg" // Input grande
                                                     />
                                                 </InputGroup>
                                             </Col>
@@ -299,13 +301,12 @@ const Cotizacion = () => {
                                         <Col md={6}>
                                             <Form.Group className="mb-3" controlId="formManoDeObra">
                                                 <Form.Label className="form-label-custom">Mano de Obra ($)</Form.Label>
-                                                <InputGroup>
+                                                <InputGroup size="lg"> {/* InputGroup grande */}
                                                     <InputGroup.Text>$</InputGroup.Text>
                                                     <Form.Control
                                                         type="number"
                                                         value={costoManoDeObra}
                                                         onChange={(e) => setCostoManoDeObra(e.target.value)}
-                                                        size="lg" // Input grande
                                                     />
                                                 </InputGroup>
                                             </Form.Group>
@@ -313,13 +314,12 @@ const Cotizacion = () => {
                                         <Col md={6}>
                                             <Form.Group className="mb-3" controlId="formMateriales">
                                                 <Form.Label className="form-label-custom">Materiales ($)</Form.Label>
-                                                <InputGroup>
+                                                <InputGroup size="lg"> {/* InputGroup grande */}
                                                     <InputGroup.Text>$</InputGroup.Text>
                                                     <Form.Control
                                                         type="number"
                                                         value={costoMateriales}
                                                         onChange={(e) => setCostoMateriales(e.target.value)}
-                                                        size="lg" // Input grande
                                                     />
                                                 </InputGroup>
                                             </Form.Group>
