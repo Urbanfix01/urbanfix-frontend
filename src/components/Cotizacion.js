@@ -54,6 +54,7 @@ const Cotizacion = () => {
             }
             if (data.monto_cotizado) {
                  if (!data.presupuesto) {
+                    // Si no hay presupuesto detallado, usamos el monto_cotizado como base de Materiales
                     setCostoMateriales(parseFloat(data.monto_cotizado) || 0);
                  }
             }
@@ -76,7 +77,9 @@ const Cotizacion = () => {
 
     // --- Cálculos de Totales ---
     const calcularTotal = () => {
-        const total = (parseFloat(costoMateriales) || 0) + (parseFloat(costoManoDeObra) || 0);
+        // Sumamos el costo de materiales, mano de obra y todos los ítems descriptivos
+        const totalItems = lineItems.reduce((acc, item) => acc + (parseFloat(item.precio) || 0), 0);
+        const total = (parseFloat(costoMateriales) || 0) + (parseFloat(costoManoDeObra) || 0) + totalItems;
         return total;
     };
 
@@ -86,9 +89,11 @@ const Cotizacion = () => {
         setError(null);
         const totalFinal = calcularTotal();
 
+        // Creamos el JSON del presupuesto
         const presupuestoJSON = JSON.stringify({
             items: lineItems,
-            manoDeObra: costoManoDeObra
+            manoDeObra: costoManoDeObra,
+            materiales: costoMateriales // Guardamos materiales también
         });
 
         const payload = {
@@ -112,7 +117,7 @@ const Cotizacion = () => {
                     return; 
                 }
             }
-            // Navega de vuelta a la lista de solicitudes (o dashboard)
+            // Navega de vuelta a la lista de solicitudes
             navigate('/solicitudes'); 
 
         } catch (apiError) {
@@ -122,6 +127,7 @@ const Cotizacion = () => {
         }
     };
 
+    // --- Generador de PDF ---
     const generarPDFInterno = (total) => {
         const doc = new jsPDF();
         
@@ -173,9 +179,11 @@ const Cotizacion = () => {
         doc.line(10, 65, 200, 65);
 
         // --- AutoTable ---
-        const tableColumn = ["Descripción", "Precio (Descriptivo)"];
+        const tableColumn = ["Descripción", "Precio"];
+        // Añadimos los ítems dinámicos
         const tableRows = lineItems.map(item => [item.descripcion, `$${parseFloat(item.precio) || 0}`]);
         
+        // Añadimos Materiales y Mano de Obra
         tableRows.push(["Costo Materiales", `$${parseFloat(costoMateriales) || 0}`]);
         tableRows.push(["Costo Mano de Obra", `$${parseFloat(costoManoDeObra) || 0}`]);
 
@@ -190,6 +198,13 @@ const Cotizacion = () => {
                     fillColor: ufGrey, // Cabecera Gris Oscuro
                     textColor: '#ffffff'
                 },
+                bodyStyles: {
+                    cellPadding: 2,
+                },
+                footStyles: {
+                    fillColor: '#ffffff',
+                    textColor: ufGrey
+                },
                 theme: 'striped'
             });
             startY = doc.lastAutoTable.finalY; 
@@ -203,7 +218,7 @@ const Cotizacion = () => {
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(ufGrey);
-        doc.text("TOTAL (Materiales + Mano de Obra):", 10, startY + 20);
+        doc.text("TOTAL (Materiales + Mano de Obra + Ítems):", 10, startY + 20);
         
         // Total en Naranja
         doc.setTextColor(ufOrange);
@@ -212,6 +227,7 @@ const Cotizacion = () => {
         doc.save(`Presupuesto_UrbanFix_${solicitud?.id}.pdf`);
     };
 
+    // --- Renderizado de Carga ---
     if (!solicitud) {
         return (
             // Aplicamos el fondo gris de admin
