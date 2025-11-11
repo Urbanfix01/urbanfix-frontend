@@ -1,79 +1,49 @@
-// src/App.js
-// Componente principal de la aplicación que maneja las rutas.
+// src/App.js (Versión Modificada)
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-// Volvemos a la importación estándar sin extensión
-import { useAuth } from './AuthContext'; 
-import './App.css';
-import './login.css'; 
+// ... Tus importaciones existentes ...
+import Header from './components/Header'; // <-- Importamos el nuevo Header
+// ...
 
-
-// 1. Importamos los componentes de la interfaz
-// Volvemos a la importación estándar sin extensión y usando PascalCase
-import Login from './components/login'; 
-import Dashboard from './components/Dashboard'; 
-import Solicitudes from './components/solicitudes'; 
-import SolicitudForm from './components/SolicitudForm'; 
-import Cotizacion from './components/Cotizacion'; 
-
-// 2. Definición del componente PrivateRoute (Guardia de Ruta)
-const PrivateRoute = ({ children }) => {
-    // Obtenemos el estado de autenticación
-    const { currentUser, loading } = useAuth();
-    
-    // Muestra un estado de carga mientras Firebase verifica el usuario
-    if (loading) {
-        return <p className="loading-message">Cargando...</p>;
-    }
-
-    // Si el usuario existe, muestra el componente hijo (Dashboard)
-    // Si no está logueado, redirige a /login
-    return currentUser ? children : <Navigate to="/login" replace />;
-};
+// ... Definición de PrivateRoute (sin cambios) ...
 
 function App() {
+    // Para decidir si mostrar el Header, necesitamos saber si el usuario está logueado
+    const { currentUser, loading } = useAuth(); // <--- Usamos el hook de autenticación
+
+    if (loading) {
+        return <p className="loading-message">Cargando la aplicación...</p>;
+    }
+
+    // El Header SÓLO se mostrará si hay un usuario autenticado (currentUser es true)
+    const shouldShowHeader = currentUser; 
+    
     return (
         <div className="App">
+            {/* Muestra el Header SÓLO si el usuario está autenticado */}
+            {shouldShowHeader && <Header />} 
+            
+            {/* Las rutas se renderizan debajo del Header (si se muestra) */}
             <Routes>
                 
-                {/* Ruta pública: Login */}
+                {/* Rutas Públicas (no tienen Header) */}
                 <Route path="/login" element={<Login />} />
-
-                {/* Ruta pública: Solicitar */}
                 <Route path="/solicitar" element={<SolicitudForm />} />
                 
-                {/* Ruta Privada: Dashboard (Protegida) */}
+                {/* Rutas Privadas (comparten el Header renderizado arriba) */}
                 <Route 
                     path="/dashboard" 
-                    element={
-                        <PrivateRoute>
-                            <Dashboard />
-                        </PrivateRoute>
-                    } 
+                    element={<PrivateRoute><Dashboard /></PrivateRoute>} 
                 />
-                
-                {/* Ruta Privada: Solicitudes (Protegida) */}
-                <Route
-                    path="/solicitudes"
-                    element={
-                        <PrivateRoute>
-                            <Solicitudes />
-                        </PrivateRoute>
-                    }
+                <Route 
+                    path="/solicitudes" 
+                    element={<PrivateRoute><Solicitudes /></PrivateRoute>}
                 />
-
-                {/* Ruta Privada: Cotización (Protegida) */}
                 <Route
                     path="/cotizar/:id"
-                    element={
-                        <PrivateRoute>
-                            <Cotizacion />
-                        </PrivateRoute>
-                    }
+                    element={<PrivateRoute><Cotizacion /></PrivateRoute>}
                 />
                 
-                {/* Redirección: Si alguien va a la raíz, lo enviamos al dashboard */}
+                {/* Redirección */}
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 
             </Routes>

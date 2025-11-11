@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+/* En src/App.css */
+
+.main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Para separar el logo de la navegación */
+    padding: 10px 20px;
+    background-color: #f8f8f8; /* Color de fondo del encabezado */
+    border-bottom: 1px solid #ddd;
+}
+
+.app-logo {
+    height: 40px; /* Tamaño clave para el logo */
+    width: auto;
+}
+
+.main-nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #333;
+}
