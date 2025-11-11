@@ -6,7 +6,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Form, Button, Card, Alert, Stack } from 'react-bootstrap'; 
 // Importamos el logo para usarlo en el header
-import logo from '../assets/urbanfix-logo-placeholder.png'; // Asegúrate de que esta ruta sea correcta
+import logo from '../assets/urbanfix-logo-placeholder.png'; // 
 
 const Login = () => {
   const emailRef = useRef();
