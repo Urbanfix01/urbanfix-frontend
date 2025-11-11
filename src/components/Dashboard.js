@@ -17,21 +17,20 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
     ? 'https://urbanfix-backend-4sfg.onrender.com' // <-- ¡Tu URL pública!
     : 'http://localhost:3000';
 
-// 🌟 NUEVO COMPONENTE: Navbar del Administrador (CON LOGO Y TEXTO RESTAURADO)
+// 🌟 NUEVO COMPONENTE: Navbar del Administrador (SOLO CON LOGO)
 const DashboardNavbar = ({ userEmail, onLogout }) => {
     return (
         <Navbar expand="lg" className="dashboard-navbar" data-bs-theme="dark">
             <Container fluid className="px-4">
-                {/* 🎯 CORRECCIÓN CLAVE: Envolvemos la imagen y el texto en un div para alinear */}
-                <Navbar.Brand href="/dashboard" className="d-flex align-items-center">
+                {/* 🎯 SOLUCIÓN FINAL: SOLO DEJAMOS EL LOGO EN Navbar.Brand */}
+                <Navbar.Brand href="/dashboard">
                     <img 
                         src="/logo.png" // Ruta directa a la carpeta public
                         alt="Urbanfix Logo" 
-                        // Reducimos el tamaño un poco más y quitamos el margin-right si usamos una clase
-                        style={{ height: '30px', marginRight: '8px' }} 
+                        // Mantenemos el ajuste de tamaño para que encaje bien
+                        style={{ height: '35px' }} 
                     />
-                    {/* Restauramos el texto de Admin, asegurando que esté al lado del logo */}
-                    <span className="fw-bold text-light">UrbanFix Admin</span> 
+                    {/* El texto 'UrbanFix Admin' se elimina para simplificar y evitar problemas de alineación */}
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
