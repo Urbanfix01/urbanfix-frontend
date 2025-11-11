@@ -1,19 +1,18 @@
 /*
  * Archivo: login.css
- * Paleta actualizada para coincidir con el logo UrbanFix (Naranja y Gris Oscuro)
+ * MODIFICADO para implementar el diseño Dual-Panel (similar a la referencia)
  */
 
 /* ---------------------------------- */
 /* 1. Paleta de Colores (UrbanFix) */
 /* ---------------------------------- */
 :root {
-    --uf-primary: #FF8A3D; /* Naranja principal del logo */
-    --uf-primary-hover: #ff741a; /* Naranja más oscuro para hover */
+    --uf-primary-dark: #cc5500; /* Naranja oscuro para base de degradado */
+    --uf-primary-light: #FF8A3D; /* Naranja principal del logo */
+    --uf-primary-hover: #ff741a; 
     --uf-secondary: #3A3B3C; /* Gris oscuro para texto/acento */
-    --uf-secondary-hover: #292a2b;
     --uf-text: #34495e;
-    --uf-green: #38a169; /* Mantenemos el verde para "Solicitar Presupuesto" (acción de conversión) */
-    --uf-green-hover: #2f855a;
+    --uf-panel-bg: #f7f7f7; /* Fondo sutil para el panel blanco */
 }
 
 /* ---------------------------------- */
@@ -21,12 +20,12 @@
 /* ---------------------------------- */
 
 .login-page-container {
-    /* Fondo degradado suave (gris claro a blanco roto) */
-    background: linear-gradient(135deg, #f9f9f9 0%, #eef1f6 100%);
+    /* Fondo degradado suave (simulando el naranja del diseño de fondo) */
+    background: linear-gradient(135deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
     min-height: 100vh;
     padding: 0;
     margin: 0;
-    display: flex;
+    /* Usamos d-flex en el componente para centrar */
 }
 
 /* ---------------------------------- */
@@ -35,75 +34,128 @@
 
 .login-card {
     border-radius: 1.5rem;
-    border: 1px solid #c3cfe2;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
-    background-color: #ffffff;
+    border: none;
+    overflow: hidden; /* Crucial para que los paneles corten el radio */
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Logo Styling */
-.urbanfix-logo {
-    max-width: 100%;
+/* ---------------------------------- */
+/* 4. PANEL SUPERIOR (NARANJA) */
+/* ---------------------------------- */
+
+.login-header-panel {
+    background: linear-gradient(160deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.urbanfix-logo-invert {
+    /* Si tienes un logo claro, úsalo aquí. Si no, invertimos los colores del placeholder */
+    filter: brightness(0) invert(1); 
+    max-width: 180px;
     height: auto;
-    /* Opción: si quieres un margen inferior distinto */
-    /* margin-bottom: 1.5rem; */
 }
 
-
-/* ---------------------------------- */
-/* 4. Tipografía y Encabezado */
-/* ---------------------------------- */
-
-/* Como eliminamos el H2, podemos usar este espacio para refinar otros textos si es necesario */
-/* Por ejemplo, hacer los labels de formulario un poco más oscuros */
-.form-label {
-    color: var(--uf-secondary);
+.welcome-text {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 1rem;
 }
 
-
-/* ---------------------------------- */
-/* 5. Estilos de Botones Personalizados */
-/* ---------------------------------- */
-
-/* Botón principal (Iniciar Sesión - Admin) - Ahora NARANJA */
-.login-button {
-    background-color: var(--uf-primary);
-    border-color: var(--uf-primary);
-    border-radius: 0.75rem;
-    letter-spacing: 1px;
-    transition: all 0.2s;
+.welcome-subtext {
+    font-size: 1rem;
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.9;
 }
 
-.login-button:hover,
-.login-button:focus {
-    background-color: var(--uf-primary-hover);
-    border-color: var(--uf-primary-hover);
-    box-shadow: 0 4px 10px rgba(255, 138, 61, 0.4); /* Sombra naranja */
-}
-
-/* Botón secundario (Solicitar Presupuesto) - Mantenemos verde para diferenciación */
-.request-button {
-    color: var(--uf-green) !important;
-    border-color: var(--uf-green) !important;
-    border-radius: 0.75rem;
+/* Botón de acción secundaria en el header */
+.action-button-header {
+    border: 2px solid white;
+    color: white !important;
     background-color: transparent !important;
-    transition: all 0.2s;
+    border-radius: 9999px; /* Píldora */
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    transition: all 0.3s;
 }
 
-.request-button:hover {
-    background-color: var(--uf-green) !important; 
-    color: #ffffff !important; 
-    border-color: var(--uf-green-hover) !important;
+.action-button-header:hover {
+    background-color: white !important;
+    color: var(--uf-primary-dark) !important;
 }
 
 /* ---------------------------------- */
-/* 6. Campos de Formulario */
+/* 5. PANEL INFERIOR (FORMULARIO) */
 /* ---------------------------------- */
 
+.login-form-panel {
+    background-color: white;
+    padding-top: 4rem !important; /* Espacio extra para separación visual */
+    padding-bottom: 4rem !important; 
+}
+
+.user-login-title {
+    color: var(--uf-secondary);
+    font-weight: 600;
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--uf-primary-dark);
+    display: inline-block;
+    padding-bottom: 0.5rem;
+    margin-bottom: 2.5rem !important;
+}
+
+.form-label-custom {
+    color: var(--uf-secondary);
+    font-weight: 500;
+}
+
+/* Campos de Formulario (React-Bootstrap) */
 .form-control-lg {
     border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    border-width: 2px;
 }
 
 .form-control-lg:focus {
-    border-color: var(--uf-primary); /* Foco NARANJA */
+    border-color: var(--uf-primary-light); /* Foco NARANJA */
     box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important; /* Sombra de foco NARANJA */
+}
+
+/* Botón principal (Iniciar Sesión) */
+.login-button-uf {
+    background-color: var(--uf-primary-light);
+    border-color: var(--uf-primary-light);
+    border-radius: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    margin-top: 1.5rem; /* Separación del último campo */
+}
+
+.login-button-uf:hover,
+.login-button-uf:focus {
+    background-color: var(--uf-primary-dark);
+    border-color: var(--uf-primary-dark);
+    box-shadow: 0 8px 15px rgba(255, 138, 61, 0.3); /* Sombra naranja más fuerte */
+}
+
+/* Link Olvidaste Contraseña */
+.forgot-password-link {
+    color: var(--uf-secondary);
+    font-size: 0.9rem;
+    text-decoration: none;
+    opacity: 0.8;
+}
+
+.forgot-password-link:hover {
+    color: var(--uf-primary-light);
+    opacity: 1;
+}
+
+/* Aseguramos que la columna no tenga padding extra */
+.col {
+    padding-left: 0;
+    padding-right: 0;
 }
