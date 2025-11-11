@@ -1,6 +1,6 @@
 /*
  * Archivo: login.css
- * AHORA ES EL ARCHIVO DE ESTILOS PRINCIPAL PARA FORMULARIOS Y LOGIN
+ * ARCHIVO DE ESTILOS PRINCIPAL
  */
 
 /* ---------------------------------- */
@@ -16,17 +16,21 @@
 }
 
 /* ---------------------------------- */
-/* 2. Contenedor de la Página */
+/* 2. Contenedor de la Página (Público) */
 /* ---------------------------------- */
 
 .login-page-container {
-    /* Fondo degradado suave (simulando el naranja del diseño de fondo) */
     background: linear-gradient(135deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
     min-height: 100vh;
     padding: 0;
     margin: 0;
-    /* py-5 (padding vertical) se añade en el formulario para scrolling */
 }
+/* Padding vertical para el formulario de solicitud (para scrolling) */
+.login-page-container.py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+}
+
 
 /* ---------------------------------- */
 /* 3. Tarjeta de Login (Card) */
@@ -35,9 +39,9 @@
 .login-card {
     border-radius: 1.5rem;
     border: none;
-    overflow: hidden; /* Crucial para que los paneles corten el radio */
+    overflow: hidden; 
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.1);
-    background-color: white; /* Aseguramos fondo blanco para el form */
+    background-color: white; 
 }
 
 /* ---------------------------------- */
@@ -64,7 +68,6 @@
     opacity: 0.9;
 }
 
-/* Botón de acción secundaria en el header */
 .action-button-header {
     border: 2px solid white;
     color: white !important;
@@ -86,7 +89,7 @@
 
 .login-form-panel {
     background-color: white;
-    padding-top: 4rem !important; /* Espacio extra para separación visual */
+    padding-top: 4rem !important;
     padding-bottom: 4rem !important; 
 }
 
@@ -106,21 +109,19 @@
 }
 
 /* ---------------------------------- */
-/* 6. ESTILOS DE FORMULARIO COMPARTIDOS (NUEVO) */
+/* 6. ESTILOS DE FORMULARIO COMPARTIDOS */
 /* ---------------------------------- */
 
-/* Títulos de sección (Ej: "Datos de Contacto") */
 .form-section-title {
     color: var(--uf-primary-dark);
     font-weight: 600;
     font-size: 1.25rem;
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 0.5rem;
-    margin-top: 1.5rem; /* Espacio entre secciones */
+    margin-top: 1.5rem; 
     margin-bottom: 1.5rem !important;
 }
 
-/* Campos de Formulario (React-Bootstrap) */
 .form-control-lg,
 .form-select-lg {
     border-radius: 0.5rem !important;
@@ -130,11 +131,10 @@
 
 .form-control-lg:focus,
 .form-select-lg:focus {
-    border-color: var(--uf-primary-light) !important; /* Foco NARANJA */
-    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important; /* Sombra de foco NARANJA */
+    border-color: var(--uf-primary-light) !important; 
+    box-shadow: 0 0 0 0.25rem rgba(255, 138, 61, 0.25) !important; 
 }
 
-/* Estilos para Radio y Checkbox (NUEVO) */
 .form-check-input:checked {
     background-color: var(--uf-primary-light);
     border-color: var(--uf-primary-light);
@@ -146,7 +146,7 @@
 }
 
 .form-check {
-    padding-left: 2.25em; /* Más espacio para el check */
+    padding-left: 2.25em; 
     margin-bottom: 0.5rem;
 }
 
@@ -159,7 +159,6 @@
 /* 7. BOTONES Y LINKS (COMPARTIDOS) */
 /* ---------------------------------- */
 
-/* Botón principal (Iniciar Sesión / Enviar Solicitud) */
 .login-button-uf {
     background-color: var(--uf-primary-light);
     border-color: var(--uf-primary-light);
@@ -167,17 +166,16 @@
     font-weight: 700;
     letter-spacing: 1px;
     transition: all 0.2s;
-    margin-top: 1.5rem; /* Separación del último campo */
+    margin-top: 1.5rem; 
 }
 
 .login-button-uf:hover,
 .login-button-uf:focus {
     background-color: var(--uf-primary-dark);
     border-color: var(--uf-primary-dark);
-    box-shadow: 0 8px 15px rgba(255, 138, 61, 0.3); /* Sombra naranja más fuerte */
+    box-shadow: 0 8px 15px rgba(255, 138, 61, 0.3); 
 }
 
-/* Link Olvidaste Contraseña */
 .forgot-password-link {
     color: var(--uf-secondary);
     font-size: 0.9rem;
@@ -190,8 +188,86 @@
     opacity: 1;
 }
 
-/* Aseguramos que la columna no tenga padding extra */
-.col {
-    padding-left: 0;
-    padding-right: 0;
+/* ---------------------------------- */
+/* 8. DASHBOARD STYLES (NUEVO) */
+/* ---------------------------------- */
+
+/* Fondo del área de contenido del dashboard (gris claro) */
+.dashboard-content {
+    background-color: #f8f9fa; /* Un gris muy claro de Bootstrap */
+    min-height: calc(100vh - 56px); /* 100% de la altura menos la navbar (56px es la altura estándar) */
+}
+
+/* Título principal del Dashboard (h1) */
+.dashboard-title {
+    color: var(--uf-secondary);
+    font-weight: 700;
+}
+
+/* Barra de Navegación Naranja */
+.dashboard-navbar {
+    background: linear-gradient(135deg, var(--uf-primary-light) 0%, var(--uf-primary-dark) 100%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button-uf {
+    border-radius: 9999px !important; /* Píldora */
+    font-weight: 600;
+    border-width: 2px !important;
+}
+.logout-button-uf:hover {
+    background-color: white !important;
+    color: var(--uf-primary-dark) !important;
+}
+
+
+/* Tarjetas de Estadísticas */
+.stat-card {
+    border-radius: 0.75rem;
+    border: none;
+    border-left: 5px solid; /* Borde de color distintivo */
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card-number {
+    font-size: 2.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card-title {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #6c757d; /* text-muted */
+    margin-bottom: 0;
+}
+
+/* Variantes de color de las tarjetas */
+.stat-card.pending {
+    border-left-color: var(--uf-primary-light);
+}
+.stat-card.pending .stat-card-number {
+    color: var(--uf-primary-light);
+}
+
+.stat-card.completed {
+    border-left-color: #198754; /* success */
+}
+.stat-card.completed .stat-card-number {
+    color: #198754;
+}
+
+.stat-card.total {
+    border-left-color: var(--uf-secondary);
+}
+.stat-card.total .stat-card-number {
+    color: var(--uf-secondary);
 }
