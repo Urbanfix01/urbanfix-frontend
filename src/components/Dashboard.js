@@ -3,27 +3,56 @@
 // 🌟 Importaciones añadidas: useState, useEffect, axios
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+// 🌟 CORRECCIÓN DE RUTA: Volvemos al estándar sin .js
 import { useAuth } from '../AuthContext'; 
-import { auth } from '../firebase';        
+import { auth } from '../firebase'; 
 import { signOut } from 'firebase/auth';
 // 🌟 'useLocation' añadido para detectar navegación
 import { useNavigate, Link, useLocation } from 'react-router-dom'; 
-// 🌟 Spinner añadido para el estado de carga
-import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap'; 
+// 🌟 Spinner, Navbar, Nav añadidos
+import { Container, Row, Col, Card, Button, Spinner, Navbar, Nav } from 'react-bootstrap'; 
 
 // 🌟 CAMBIO 1: URL de API actualizada
-// Usa la URL de Render en producción, o localhost en desarrollo
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
     ? 'https://urbanfix-backend-4sfg.onrender.com' // <-- ¡Tu URL pública!
     : 'http://localhost:3000';
 
+// 🌟 NUEVO COMPONENTE: Navbar del Administrador
+// (Lo definimos aquí para mantener todo en un solo archivo por ahora)
+const DashboardNavbar = ({ userEmail, onLogout }) => {
+    return (
+        <Navbar expand="lg" className="dashboard-navbar" data-bs-theme="dark">
+            <Container fluid className="px-4">
+                <Navbar.Brand href="/dashboard" className="fw-bold">
+                    UrbanFix Admin
+                </Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="ms-auto d-flex align-items-center">
+                        <Nav.Item className="text-light me-3">
+                            <small>Conectado como:</small> <strong>{userEmail}</strong>
+                        </Nav.Item>
+                        <Button 
+                            variant="outline-light" 
+                            onClick={onLogout}
+                            size="sm"
+                            className="logout-button-uf"
+                        >
+                            Cerrar Sesión
+                        </Button>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
+    );
+};
+
+
 const Dashboard = () => {
     const { currentUser } = useAuth(); 
     const navigate = useNavigate(); 
-    // 🌟 Hook 'useLocation'
     const location = useLocation();
 
-    // 🌟 Nuevo estado para las estadísticas
     const [summary, setSummary] = useState({ total: 0, pendientes: 0, finalizadas: 0 });
     const [loading, setLoading] = useState(true);
 
@@ -36,17 +65,15 @@ const Dashboard = () => {
         }
     };
 
-    // 🌟 Nuevo Hook para cargar datos del Dashboard
+    // Hook para cargar datos del Dashboard
     useEffect(() => {
         const fetchSummary = async () => {
-            // 🌟 Mostramos el spinner en cada recarga
             setLoading(true); 
             try {
                 const response = await axios.get(`${API_BASE_URL}/api/dashboard-summary`);
                 setSummary(response.data);
             } catch (err) {
                 console.error("Error al cargar el resumen del dashboard:", err);
-                // Si falla, muestra 'Error'
                 setSummary({ total: '!', pendientes: '!', finalizadas: '!' }); 
             } finally {
                 setLoading(false);
@@ -54,8 +81,6 @@ const Dashboard = () => {
         };
 
         fetchSummary();
-    // 🌟 CORRECCIÓN: El 'useEffect' ahora depende de 'location'.
-    // Se ejecutará cada vez que navegues A ESTA PÁGINA.
     }, [location]); 
 
     // Función auxiliar para mostrar el spinner o el número
@@ -68,91 +93,82 @@ const Dashboard = () => {
     };
 
     return (
-        <Container className="mt-5">
-            <Row className="justify-content-center">
-                <Col md={10} lg={9}>
-                    <Card className="shadow-lg p-4">
-                        <Card.Body>
-                            {/* Encabezado del Dashboard */}
-                            <h1 className="text-center mb-4 text-primary">👋 Panel de Control UrbanFix 2026</h1>
-                            <hr />
+        // 🌟 Usamos React.Fragment (o <>) para no añadir un div innecesario
+        <>
+            {/* 1. RENDERIZAMOS LA NUEVA NAVBAR */}
+            <DashboardNavbar 
+                userEmail={currentUser ? currentUser.email : 'Usuario'}
+                onLogout={handleLogout}
+            />
 
-                            {/* Información del Usuario */}
-                            <p className="lead">
-                                ¡Bienvenido, **{currentUser ? currentUser.email : 'Usuario de UrbanFix'}**!
+            {/* 2. CONTENIDO PRINCIPAL DEL DASHBOARD */}
+            <div className="dashboard-content">
+                <Container className="py-5">
+                    
+                    {/* Título de la sección */}
+                    <Row className="mb-4">
+                        <Col>
+                            <h1 className="dashboard-title">Resumen de Solicitudes</h1>
+                            <p className="text-muted">
+                                Un vistazo rápido a los trabajos pendientes y finalizados.
                             </p>
-                            
-                            <div className="mb-4">
-                                <p><strong>Rol:</strong> Administrador (Asumiendo un rol base)</p>
-                            </div>
-
-                            {/* Botón para Cerrar Sesión */}
-                            <div className="mb-5 d-flex justify-content-end">
-                                <Button variant="outline-danger" onClick={handleLogout}>
-                                    Cerrar Sesión
-                                </Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Sección de Estadísticas (AHORA REAL) */}
-            <Row className="justify-content-center mt-4">
-                <Col md={10} lg={9}>
-                    <Card className="shadow-sm">
-                        <Card.Body>
-                        {/* 🌟 Emoji '📈' eliminado */}
-                        <h3 className="mb-3">Resumen de Solicitudes</h3>
-                        <Row className="text-center">
-                            {/* Tarjeta 1: Solicitudes Totales */}
-                            <Col md={4} className="mb-3">
-                                <Card className="shadow-sm border-primary">
-                                    <Card.Body>
-                                        <h2 className="text-primary">{renderStat(summary.total)}</h2>
-                                        {/* 🌟 Tipografía afinada */}
-                                        <p className="text-muted mb-0 small text-uppercase fw-bold">TOTALES CREADAS</p>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            {/* Tarjeta 2: Solicitudes Pendientes */}
-                            <Col md={4} className="mb-3">
-                                <Card className="shadow-sm border-warning">
-                                    <Card.Body>
-                                        <h2 className="text-warning">{renderStat(summary.pendientes)}</h2>
-                                        {/* 🌟 Tipografía afinada */}
-                                        <p className="text-muted mb-0 small text-uppercase fw-bold">PENDIENTES</p>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            {/* Tarjeta 3: Solicitudes Finalizadas */}
-                            <Col md={4} className="mb-3">
-                                <Card className="shadow-sm border-success">
-                                    <Card.Body>
-                                        <h2 className="text-success">{renderStat(summary.finalizadas)}</h2>
-                                        {/* 🌟 Tipografía afinada */}
-                                        <p className="text-muted mb-0 small text-uppercase fw-bold">FINALIZADAS</p>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        </Row>
-
-                        <hr />
+                        </Col>
+                    </Row>
+                    
+                    {/* Sección de Estadísticas (AHORA CON ESTILO) */}
+                    <Row>
+                        {/* Tarjeta 1: Solicitudes Pendientes (NARANJA) */}
+                        <Col md={4} className="mb-4">
+                            {/* 🌟 Clases de estilo personalizadas aplicadas */}
+                            <Card className="shadow-sm stat-card pending">
+                                <Card.Body>
+                                    <h2 className="stat-card-number">{renderStat(summary.pendientes)}</h2>
+                                    <p className="stat-card-title">PENDIENTES</p>
+                                </Card.Body>
+                            </Card>
+                        </Col>
                         
-                        {/* Botón para Navegar a la Vista de Solicitudes */}
-                        <div className="d-grid gap-2">
-                            <Link to="/solicitudes">
-                                <Button variant="primary" size="lg" className="w-100">
-                                    Administrar Solicitudes
-                                </Button>
-                            </Link>
-                        </div>
+                        {/* Tarjeta 2: Solicitudes Finalizadas (VERDE) */}
+                        <Col md={4} className="mb-4">
+                            <Card className="shadow-sm stat-card completed">
+                                <Card.Body>
+                                    <h2 className="stat-card-number">{renderStat(summary.finalizadas)}</h2>
+                                    <p className="stat-card-title">FINALIZADAS</p>
+                                </Card.Body>
+                            </Card>
+                        </Col>
 
-                        </Card.Body>
-                    </Card> {/* Card cerrada correctamente */}
-                </Col>
-            </Row>
-        </Container>
+                        {/* Tarjeta 3: Solicitudes Totales (GRIS OSCURO) */}
+                        <Col md={4} className="mb-4">
+                            <Card className="shadow-sm stat-card total">
+                                <Card.Body>
+                                    <h2 className="stat-card-number">{renderStat(summary.total)}</h2>
+                                    {/* 🌟 CORRECCIÓN DE SINTAXIS: </O> cambiado a </p> */}
+                                    <p className="stat-card-title">TOTALES CREADAS</p>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    <hr className="my-4" />
+                    
+                    {/* Botón para Navegar a la Vista de Solicitudes */}
+                    <Row>
+                        <Col md={6} className="mx-auto">
+                            <div className="d-grid gap-2">
+                                <Link to="/solicitudes">
+                                    {/* 3. APLICAMOS EL ESTILO DE BOTÓN NARANJA */}
+                                    <Button variant="primary" size="lg" className="w-100 login-button-uf">
+                                        Administrar Solicitudes
+                                    </Button>
+                                </Link>
+                            </div>
+                        </Col>
+                    </Row>
+                    
+                </Container>
+            </div>
+        </>
     );
 };
 
