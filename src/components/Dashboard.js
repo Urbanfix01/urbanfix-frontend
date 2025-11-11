@@ -3,34 +3,23 @@
 // 🌟 Importaciones añadidas: useState, useEffect, axios
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// 🌟 CORRECCIÓN DE RUTA: Volvemos al estándar sin .js
-import { useAuth } from '../AuthContext'; 
-// ELIMINADO: import { auth } from '../firebase'; 
-// ELIMINADO: import { signOut } from 'firebase/auth';
-// 🌟 'useLocation' añadido para detectar navegación
-import { useNavigate, Link, useLocation } from 'react-router-dom'; 
-// 🌟 Spinner, Navbar, Nav añadidos
+// 🛑 ELIMINADO: import { useAuth } from '../AuthContext'; 
+// 🛑 ELIMINADO: import { useNavigate } from 'react-router-dom'; 
+import { Link, useLocation } from 'react-router-dom'; // Se mantiene Link y useLocation
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap'; 
-// ELIMINADO: import { Navbar, Nav } from 'react-bootstrap'; 
 
 // 🌟 CAMBIO 1: URL de API actualizada
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
     ? 'https://urbanfix-backend-4sfg.onrender.com' // <-- ¡Tu URL pública!
     : 'http://localhost:3000';
 
-// 🛑 COMPONENTE DashboardNavbar ELIMINADO O COMENTADO (La lógica se movió a Header.jsx)
-
 const Dashboard = () => {
-    // ELIMINADO: const { currentUser } = useAuth(); 
-    // ELIMINADO: const navigate = useNavigate(); 
-    const location = useLocation(); // location sigue siendo útil para el useEffect
+    
+    // Se mantiene location porque se usa en el useEffect
+    const location = useLocation(); 
 
     const [summary, setSummary] = useState({ total: 0, pendientes: 0, finalizadas: 0 });
     const [loading, setLoading] = useState(true);
-
-    // 🛑 handleLogout ELIMINADO (La lógica se movió a Header.jsx)
-    // const handleLogout = async () => { ... }
-
 
     // Hook para cargar datos del Dashboard
     useEffect(() => {
@@ -62,9 +51,6 @@ const Dashboard = () => {
     return (
         // 🌟 Usamos React.Fragment (o <>) para no añadir un div innecesario
         <>
-            {/* 🛑 LA LLAMADA AL NAVBAR SE ELIMINA DE AQUÍ */}
-
-            {/* 2. CONTENIDO PRINCIPAL DEL DASHBOARD */}
             <div className="dashboard-content">
                 <Container className="py-5">
                     
