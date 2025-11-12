@@ -1,0 +1,83 @@
+/* ---------------------------------
+8. Estilos del Dashboard (Tarjetas y Layout)
+---------------------------------
+*/
+
+/* Navbar del Admin (Naranja) */
+/* NOTA: Las variables de color (--uf-primary, etc.) son definidas en :root en src/login.css */
+.dashboard-navbar {
+    background-color: var(--uf-primary) !important;
+    background: linear-gradient(90deg, var(--uf-primary) 0%, #ffa55f 100%) !important;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Botón de Logout */
+.logout-button-uf {
+    border-width: 2px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+}
+.logout-button-uf:hover {
+    background-color: white !important;
+    color: var(--uf-primary) !important;
+}
+
+/* Contenedor principal del contenido del Dashboard (Fondo Gris) */
+.dashboard-content {
+    background-color: var(--uf-light-bg);
+    min-height: calc(100vh - 74px); /* 100% alto menos la navbar */
+}
+
+/* Título principal H1 del Dashboard */
+.dashboard-title {
+    font-weight: 700;
+    color: var(--uf-secondary);
+    font-size: 2.25rem;
+}
+
+/* Tarjetas de Estadísticas (Base) */
+.stat-card {
+    border-radius: 0.75rem !important; /* 12px */
+    border: 1px solid #e9ecef;
+    border-left-width: 6px !important; /* Borde izquierdo grueso */
+    transition: all 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+}
+.stat-card .stat-card-number {
+    font-weight: 700;
+    font-size: 3rem; /* 48px */
+}
+.stat-card .stat-card-title {
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+/* Colores de Tarjetas de Estadísticas */
+.stat-card.pending {
+    border-left-color: var(--uf-primary) !important;
+}
+.stat-card.pending .stat-card-number {
+    color: var(--uf-primary);
+}
+
+.stat-card.completed {
+    border-left-color: var(--uf-success) !important;
+}
+.stat-card.completed .stat-card-number {
+    color: var(--uf-success);
+}
+
+.stat-card.total {
+    border-left-color: var(--uf-secondary) !important;
+}
+.stat-card.total .stat-card-number {
+    color: var(--uf-secondary);
+}
