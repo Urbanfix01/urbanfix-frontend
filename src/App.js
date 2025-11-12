@@ -12,8 +12,8 @@ import './login.css';
 // 1. Importamos los componentes de la interfaz
 // Corregido: La ruta a components/ requiere la notación ./components/archivo
 import Login from './components/login.js'; 
-import Solicitudes from './components/Solicitudes.js'; 
-import SolicitudForm from './components/SolicitudForm.js'; 
+import Solicitudes from './components/solicitudes.js'; 
+import SolicitudForm from './components/solicitudForm.js'; 
 import Cotizacion from './components/Cotizacion.js'; 
 
 // 2. Definición del componente PrivateRoute (Guardia de Ruta)
