@@ -3,14 +3,14 @@
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-// Corregido: Ahora apunta explícitamente al archivo AuthContext.js en la raíz de src/
+// Corregido: Si AuthContext.js está en la raíz de src/, la importación es directa
 import { useAuth } from './AuthContext.js'; 
 import './App.css';
 import './login.css'; 
 
 
 // 1. Importamos los componentes de la interfaz
-// Corregido: Las rutas relativas a componentes usan la extensión .js
+// Corregido: La ruta a components/ requiere la notación ./components/archivo
 import Login from './components/Login.js'; 
 import Solicitudes from './components/Solicitudes.js'; 
 import SolicitudForm from './components/SolicitudForm.js'; 
