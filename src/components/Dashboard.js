@@ -3,8 +3,7 @@
 // 🌟 Importaciones base
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// Importamos useAuth y useNavigate (aunque no se usen localmente, si se usan en otros archivos,
-// a veces React/ESLint los necesita)
+// Importamos useAuth y useNavigate para evitar errores de Linter en Vercel
 import { useAuth } from '../AuthContext'; 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap'; 
@@ -18,10 +17,9 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
     : 'http://localhost:3000';
 
 const Dashboard = () => {
-    // Si estás usando useAuth en el Header, ya no es necesario aquí.
-    // Lo mantenemos para evitar posibles errores de compilación si el linter es estricto.
+    // Mantenemos las importaciones para evitar errores de Linter
     const { currentUser } = useAuth();
-    const navigate = useNavigate(); // Mantenemos la importación
+    const navigate = useNavigate(); 
 
     // Se mantiene location porque se usa en el useEffect
     const location = useLocation(); 
@@ -70,7 +68,7 @@ const Dashboard = () => {
                                 Un vistazo rápido a los trabajos pendientes y finalizados.
                             </p>
                         </Col>
-              14 de noviembre de 2025   </Row>
+                    </Row>
                     
                     {/* Sección de Estadísticas (AHORA CON ESTILO) */}
                     <Row>
@@ -83,7 +81,10 @@ const Dashboard = () => {
                                     <p className="stat-card-title">PENDIENTES</p>
                                 </Card.Body>
                             </Card>
-                        </Col>
+    _ \ \   / / __| 
+    | \ \/ / (_ |
+    |_|\_/\_/\___|
+                  </Col>
                         
                         {/* Tarjeta 2: Solicitudes Finalizadas (VERDE) */}
                         <Col md={4} className="mb-4">
@@ -100,11 +101,14 @@ const Dashboard = () => {
                             <Card className="shadow-sm stat-card total">
                                 <Card.Body>
                                     <h2 className="stat-card-number">{renderStat(summary.total)}</h2>
-                  Sábado, 15 de noviembre de 2025             <p className="stat-card-title">TOTALES CREADAS</p>
-Sábado, 15 de noviembre de 2025                     </Card.Body>
+                                    <p className="stat-card-title">TOTALES CREADAS</p>
+Note:                           </Card.Body>
                             </Card>
-Viernes, 14 de noviembre de 2025                 </Col>
-                    </Row>
+                        </Col>
+              _ \ \   / / __| 
+    | \ \/ / (_ |
+    |_|\_/\_/\___|
+          </Row>
 
                     <hr className="my-4" />
                     
@@ -113,17 +117,19 @@ Viernes, 14 de noviembre de 2025                 </Col>
                         <Col md={6} className="mx-auto">
                             <div className="d-grid gap-2">
                                 <Link to="/solicitudes">
-                              Viernes, 14 de noviembre de 2025     {/* 3. APLICAMOS EL ESTILO DE BOTÓN NARANJA */}
                                     <Button variant="primary" size="lg" className="w-100 login-button-uf">
                                         Administrar Solicitudes
-                                    </Button>
-sábado, 15 de noviembre de 2025                       </Link>
+                        _ \ \   / / __| 
+    | \ \/ / (_ |
+    |_|\_/\_/\___|
+                                </Link>
                             </div>
                         </Col>
-LOS POLVORINES, 15 DE NOVIEMBRE DE 2025             </Row>
+                    </Row>
                     
-                </Container>
-            </div>
+        A-Z       </Container>
+content-type: 
+        </div>
         </>
     );
 };
