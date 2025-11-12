@@ -2,26 +2,19 @@
 // Componente principal de la aplicación que maneja las rutas.
 
 import React from 'react';
-// IMPORTACIONES DE REACT ROUTER DOM 
 import { Routes, Route, Navigate } from 'react-router-dom';
-
-// Importación del hook de autenticación
-import { useAuth } from './AuthContext'; 
-
-// Importación del componente de Encabezado centralizado
-import AdminHeader from './components/Header'; 
-
+// Corregido: Ahora apunta explícitamente al archivo AuthContext.js en la raíz de src/
+import { useAuth } from './AuthContext.js'; 
 import './App.css';
-import './login.css'; // <-- 1. Se cargan las variables de color
-import './dashboard.css'; // <-- 2. Se cargan los estilos del dashboard (que usan las variables)
+import './login.css'; 
 
 
 // 1. Importamos los componentes de la interfaz
-import Login from './components/login'; 
-import Dashboard from './components/Dashboard'; 
-import Solicitudes from './components/solicitudes'; 
-import SolicitudForm from './components/SolicitudForm'; 
-import Cotizacion from './components/Cotizacion'; 
+// Corregido: Las rutas relativas a componentes usan la extensión .js
+import Login from './components/Login.js'; 
+import Solicitudes from './components/Solicitudes.js'; 
+import SolicitudForm from './components/SolicitudForm.js'; 
+import Cotizacion from './components/Cotizacion.js'; 
 
 // 2. Definición del componente PrivateRoute (Guardia de Ruta)
 const PrivateRoute = ({ children }) => {
@@ -39,14 +32,8 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
-    // Lógica para mostrar/ocultar el Header
-    const { currentUser } = useAuth(); 
-    
     return (
         <div className="App">
-            {/* Si el usuario está autenticado, mostramos el encabezado centralizado */}
-            {currentUser && <AdminHeader />} 
-            
             <Routes>
                 
                 {/* Ruta pública: Login */}
@@ -55,23 +42,29 @@ function App() {
                 {/* Ruta pública: Solicitar */}
                 <Route path="/solicitar" element={<SolicitudForm />} />
                 
-                {/* Rutas Privadas */}
+                {/* RUTA PRINCIPAL ADMINISTRADOR: Ahora apunta directamente a Solicitudes */}
                 <Route 
-                    path="/dashboard" 
-                    element={<PrivateRoute><Dashboard /></PrivateRoute>} 
-                />
-                <Route
                     path="/solicitudes"
-                    element={<PrivateRoute><Solicitudes /></PrivateRoute>}
+                    element={
+                        <PrivateRoute>
+                            <Solicitudes />
+                        </PrivateRoute>
+                    }
                 />
 
+                {/* Ruta Privada: Cotización (Protegida) */}
                 <Route
                     path="/cotizar/:id"
-                    element={<PrivateRoute><Cotizacion /></PrivateRoute>}
+                    element={
+                        <PrivateRoute>
+                            <Cotizacion />
+                        </PrivateRoute>
+                    }
                 />
                 
-                {/* Redirección: Si alguien va a la raíz, lo enviamos al dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                {/* Redirección: Si alguien va a la raíz o al antiguo dashboard, va a Solicitudes */}
+                <Route path="/" element={<Navigate to="/solicitudes" replace />} />
+                <Route path="/dashboard" element={<Navigate to="/solicitudes" replace />} />
                 
             </Routes>
         </div>
