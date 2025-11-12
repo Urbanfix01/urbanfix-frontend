@@ -12,7 +12,8 @@ import { useAuth } from './AuthContext';
 import AdminHeader from './components/Header'; 
 
 import './App.css';
-import './login.css'; 
+import './login.css'; // <-- 1. Se cargan las variables de color
+import './dashboard.css'; // <-- 2. Se cargan los estilos del dashboard (que usan las variables)
 
 
 // 1. Importamos los componentes de la interfaz

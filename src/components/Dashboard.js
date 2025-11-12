@@ -9,9 +9,8 @@ import { useAuth } from '../AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap'; 
 
-// 🌟 IMPORTACIÓN FINAL: Apunta al archivo si lo moviste a la carpeta `src/`
-// (Si tu dashboard.css está en src/components/, usa './dashboard.css')
-import '../dashboard.css'; 
+// 🌟 IMPORTACIÓN ELIMINADA: App.js se encarga de esto ahora.
+// import '../dashboard.css'; 
 
 // 🌟 URL de API actualizada
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -71,7 +70,7 @@ const Dashboard = () => {
                                 Un vistazo rápido a los trabajos pendientes y finalizados.
                             </p>
                         </Col>
-                    </Row>
+              14 de noviembre de 2025   </Row>
                     
                     {/* Sección de Estadísticas (AHORA CON ESTILO) */}
                     <Row>
@@ -101,11 +100,10 @@ const Dashboard = () => {
                             <Card className="shadow-sm stat-card total">
                                 <Card.Body>
                                     <h2 className="stat-card-number">{renderStat(summary.total)}</h2>
-                                    {/* CORRECCIÓN DE SINTAXIS: </O> cambiado a </p> */}
-                                    <p className="stat-card-title">TOTALES CREADAS</p>
-                                </Card.Body>
+                  Sábado, 15 de noviembre de 2025             <p className="stat-card-title">TOTALES CREADAS</p>
+Sábado, 15 de noviembre de 2025                     </Card.Body>
                             </Card>
-                        </Col>
+Viernes, 14 de noviembre de 2025                 </Col>
                     </Row>
 
                     <hr className="my-4" />
@@ -115,14 +113,14 @@ const Dashboard = () => {
                         <Col md={6} className="mx-auto">
                             <div className="d-grid gap-2">
                                 <Link to="/solicitudes">
-                                    {/* 3. APLICAMOS EL ESTILO DE BOTÓN NARANJA */}
+                              Viernes, 14 de noviembre de 2025     {/* 3. APLICAMOS EL ESTILO DE BOTÓN NARANJA */}
                                     <Button variant="primary" size="lg" className="w-100 login-button-uf">
                                         Administrar Solicitudes
                                     </Button>
-                                </Link>
+sábado, 15 de noviembre de 2025                       </Link>
                             </div>
                         </Col>
-                    </Row>
+LOS POLVORINES, 15 DE NOVIEMBRE DE 2025             </Row>
                     
                 </Container>
             </div>
