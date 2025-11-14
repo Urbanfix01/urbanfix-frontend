@@ -3,31 +3,28 @@
 
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-// Corregido: Si AuthContext.js está en la raíz de src/, la importación es directa
 import { useAuth } from './AuthContext.js'; 
 import './App.css';
 import './login.css'; 
 
-
 // 1. Importamos los componentes de la interfaz
-// Corregido: La ruta a components/ requiere la notación ./components/archivo
 import Login from './components/login.js'; 
 import Solicitudes from './components/solicitudes.js'; 
 import SolicitudForm from './components/SolicitudForm.js'; 
 import Cotizacion from './components/Cotizacion.js'; 
+// --- ¡NUEVA IMPORTACIÓN! ---
+// Importamos el Dashboard para usarlo como lobby
+import Dashboard from './components/Dashboard.js';
 
 // 2. Definición del componente PrivateRoute (Guardia de Ruta)
+// (Esta lógica está correcta)
 const PrivateRoute = ({ children }) => {
-    // Obtenemos el estado de autenticación
     const { currentUser, loading } = useAuth();
     
-    // Muestra un estado de carga mientras Firebase verifica el usuario
     if (loading) {
         return <p className="loading-message">Cargando...</p>;
     }
 
-    // Si el usuario existe, muestra el componente hijo
-    // Si no está logueado, redirige a /login
     return currentUser ? children : <Navigate to="/login" replace />;
 };
 
@@ -42,7 +39,19 @@ function App() {
                 {/* Ruta pública: Solicitar */}
                 <Route path="/solicitar" element={<SolicitudForm />} />
                 
-                {/* RUTA PRINCIPAL ADMINISTRADOR: Ahora apunta directamente a Solicitudes */}
+                {/* --- RUTA CORREGIDA: DASHBOARD (LOBBY) --- */}
+                {/* Ahora esta es la ruta principal del admin */}
+                <Route 
+                    path="/dashboard"
+                    element={
+                        <PrivateRoute>
+                            <Dashboard />
+                        </PrivateRoute>
+                    }
+                />
+
+                {/* RUTA SECUNDARIA: Solicitudes */}
+                {/* Se mantiene protegida, pero ya no es la principal */}
                 <Route 
                     path="/solicitudes"
                     element={
@@ -62,9 +71,9 @@ function App() {
                     }
                 />
                 
-                {/* Redirección: Si alguien va a la raíz o al antiguo dashboard, va a Solicitudes */}
-                <Route path="/" element={<Navigate to="/solicitudes" replace />} />
-                <Route path="/dashboard" element={<Navigate to="/solicitudes" replace />} />
+                {/* --- REDIRECCIÓN CORREGIDA --- */}
+                {/* Si alguien va a la raíz, lo mandamos al Dashboard (lobby) */}
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 
             </Routes>
         </div>

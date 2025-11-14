@@ -23,9 +23,12 @@ const Login = () => {
         emailRef.current.value,
         passwordRef.current.value
       );
-    navigate('/solicitudes'); 
+      
+      // --- ¡CORRECCIÓN DE NAVEGACIÓN! ---
+      // Volvemos a navegar al /dashboard (que ahora es tu lobby)
+      navigate('/dashboard'); 
 
-    } catch (err) {
+    } catch (err) {
       // Usamos un mensaje de error genérico para mayor claridad
       setError('Fallo al iniciar sesión. Por favor, verifica tus credenciales.');
     }
@@ -72,25 +75,25 @@ const Login = () => {
                 <Form onSubmit={handleSubmit}>
                     
                     <Form.Group className="mb-3" controlId="formBasicEmail">
-                      <Form.Label className="form-label-custom">Correo Electrónico</Form.Label>
-                      <Form.Control 
-                        type="email" 
-                        ref={emailRef} 
-                        placeholder="ejemplo@urbanfix.com" 
-                        required 
-                        size="lg"
-                      />
+                        <Form.Label className="form-label-custom">Correo Electrónico</Form.Label>
+                        <Form.Control 
+                            type="email" 
+                            ref={emailRef} 
+                            placeholder="ejemplo@urbanfix.com" 
+                            required 
+                            size="lg"
+                        />
                     </Form.Group>
 
                     <Form.Group className="mb-4" controlId="formBasicPassword">
-                      <Form.Label className="form-label-custom">Contraseña</Form.Label>
-                      <Form.Control 
-                        type="password" 
-                        ref={passwordRef} 
-                        placeholder="••••••••" 
-                        required 
-                        size="lg"
-                      />
+                        <Form.Label className="form-label-custom">Contraseña</Form.Label>
+                        <Form.Control 
+                            type="password" 
+                            ref={passwordRef} 
+                            placeholder="••••••••" 
+                            required 
+                            size="lg"
+                        />
                     </Form.Group>
                     
                     {/* Utilizamos Stack para apilar los botones principales */}
