@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-// ⛔ ELIMINADO: import axios from 'axios';
-// ✅ AÑADIDO: Importamos nuestra función centralizada
-import { createSolicitud } from '../../services/api'; 
+// ✅ CORRECCIÓN DE RUTA: Cambiado de '../../' a '../'
+import { createSolicitud } from '../services/api'; 
 import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from 'react-bootstrap'; 
 import { Link } from 'react-router-dom';
 
-// ⛔ ELIMINADO: La constante API_BASE_URL
-// (Nuestra capa de servicio 'api.js' ahora maneja esto automáticamente)
-
+// ... (El resto del componente es idéntico) ...
 const SolicitudForm = () => {
     // 🌟 ESTADOS AMPLIADOS PARA INCLUIR URGENCIA Y VENTANAS
     // (Estos estados se mantienen igual)
