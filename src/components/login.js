@@ -23,8 +23,9 @@ const Login = () => {
         emailRef.current.value,
         passwordRef.current.value
       );
-      navigate('/dashboard'); 
-    } catch (err) {
+    navigate('/solicitudes'); 
+
+    } catch (err) {
       // Usamos un mensaje de error genérico para mayor claridad
       setError('Fallo al iniciar sesión. Por favor, verifica tus credenciales.');
     }
