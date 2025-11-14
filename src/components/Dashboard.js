@@ -1,24 +1,18 @@
-// src/components/Dashboard.js
-
-// 🌟 Importaciones añadidas: useState, useEffect, axios
+// ⛔ ELIMINADO: axios
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-// 🌟 CORRECCIÓN DE RUTA: Volvemos al estándar sin .js
+// ✅ AÑADIDO: Importamos nuestra función centralizada
+import { getDashboardSummary } from '../services/api'; 
 import { useAuth } from '../AuthContext'; 
 import { auth } from '../firebase'; 
 import { signOut } from 'firebase/auth';
-// 🌟 'useLocation' añadido para detectar navegación
 import { useNavigate, Link, useLocation } from 'react-router-dom'; 
-// 🌟 Spinner, Navbar, Nav añadidos
-import { Container, Row, Col, Card, Button, Spinner, Navbar, Nav } from 'react-bootstrap'; 
+// ✅ AÑADIDO: Alert para manejo de errores
+import { Container, Row, Col, Card, Button, Spinner, Navbar, Nav, Alert } from 'react-bootstrap'; 
 
-// 🌟 CAMBIO 1: URL de API actualizada
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://urbanfix-backend-4sfg.onrender.com' // <-- ¡Tu URL pública!
-    : 'http://localhost:3000';
+// ⛔ ELIMINADO: La constante API_BASE_URL
+// (Nuestra capa de servicio 'api.js' ahora maneja esto automáticamente)
 
-// 🌟 NUEVO COMPONENTE: Navbar del Administrador
-// (Lo definimos aquí para mantener todo en un solo archivo por ahora)
+// 🌟 COMPONENTE NAVBAR (Se mantiene idéntico)
 const DashboardNavbar = ({ userEmail, onLogout }) => {
     return (
         <Navbar expand="lg" className="dashboard-navbar" data-bs-theme="dark">
@@ -55,6 +49,8 @@ const Dashboard = () => {
 
     const [summary, setSummary] = useState({ total: 0, pendientes: 0, finalizadas: 0 });
     const [loading, setLoading] = useState(true);
+    // ✅ AÑADIDO: Estado de error para la UI
+    const [error, setError] = useState(null);
 
     const handleLogout = async () => {
         try {
@@ -65,15 +61,20 @@ const Dashboard = () => {
         }
     };
 
-    // Hook para cargar datos del Dashboard
+    // ✅ --- HOOK REFACTORIZADO para cargar datos ---
     useEffect(() => {
         const fetchSummary = async () => {
             setLoading(true); 
+            setError(null); // Limpiamos error anterior
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/dashboard-summary`);
-                setSummary(response.data);
+                // 1. Llamamos a nuestra nueva función del servicio
+                // 'data' ya es el objeto JSON parseado
+                const data = await getDashboardSummary();
+                setSummary(data);
             } catch (err) {
+                // 'err.message' viene del error lanzado en 'api.js'
                 console.error("Error al cargar el resumen del dashboard:", err);
+                setError(err.message); // Guardamos el error para la UI
                 setSummary({ total: '!', pendientes: '!', finalizadas: '!' }); 
             } finally {
                 setLoading(false);
@@ -81,10 +82,13 @@ const Dashboard = () => {
         };
 
         fetchSummary();
-    }, [location]); 
+    }, [location]); // 'location' es correcto para forzar un refresh si se navega al dashboard
 
     // Función auxiliar para mostrar el spinner o el número
     const renderStat = (value) => {
+        // No mostramos spinner si hay un error, mostramos '!'
+        if (error) return value; 
+        
         return loading ? (
             <Spinner animation="border" size="sm" />
         ) : (
@@ -93,9 +97,8 @@ const Dashboard = () => {
     };
 
     return (
-        // 🌟 Usamos React.Fragment (o <>) para no añadir un div innecesario
         <>
-            {/* 1. RENDERIZAMOS LA NUEVA NAVBAR */}
+            {/* 1. RENDERIZAMOS LA NAVBAR */}
             <DashboardNavbar 
                 userEmail={currentUser ? currentUser.email : 'Usuario'}
                 onLogout={handleLogout}
@@ -115,11 +118,21 @@ const Dashboard = () => {
                         </Col>
                     </Row>
                     
+                    {/* ✅ AÑADIDO: Alerta de error si falla el fetch */}
+                    {error && (
+                        <Row className="mb-4">
+                            <Col>
+                                <Alert variant="danger">
+                                    <strong>Error al cargar datos:</strong> {error}
+                                </Alert>
+                            </Col>
+                        </Row>
+                    )}
+
                     {/* Sección de Estadísticas (AHORA CON ESTILO) */}
                     <Row>
                         {/* Tarjeta 1: Solicitudes Pendientes (NARANJA) */}
                         <Col md={4} className="mb-4">
-                            {/* 🌟 Clases de estilo personalizadas aplicadas */}
                             <Card className="shadow-sm stat-card pending">
                                 <Card.Body>
                                     <h2 className="stat-card-number">{renderStat(summary.pendientes)}</h2>
@@ -143,7 +156,6 @@ const Dashboard = () => {
                             <Card className="shadow-sm stat-card total">
                                 <Card.Body>
                                     <h2 className="stat-card-number">{renderStat(summary.total)}</h2>
-                                    {/* 🌟 CORRECCIÓN DE SINTAXIS: </O> cambiado a </p> */}
                                     <p className="stat-card-title">TOTALES CREADAS</p>
                                 </Card.Body>
                             </Card>
@@ -157,7 +169,6 @@ const Dashboard = () => {
                         <Col md={6} className="mx-auto">
                             <div className="d-grid gap-2">
                                 <Link to="/solicitudes">
-                                    {/* 3. APLICAMOS EL ESTILO DE BOTÓN NARANJA */}
                                     <Button variant="primary" size="lg" className="w-100 login-button-uf">
                                         Administrar Solicitudes
                                     </Button>

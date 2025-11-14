@@ -1,20 +1,18 @@
-// src/components/Solicitudes.js
-
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// ⛔ ELIMINADO: import axios from 'axios';
+// ✅ AÑADIDO: Importamos nuestras funciones centralizadas
+import { getSolicitudes, updateSolicitud, deleteSolicitud } from '../services/api';
 import { Container, Table, Button, Form, Alert, Spinner, Stack, Row, Col, Modal, ListGroup, Card, Navbar, Nav } from 'react-bootstrap'; 
 import { ArrowClockwise, PencilFill, CurrencyDollar, EyeFill, TrashFill, SaveFill, XCircleFill } from 'react-bootstrap-icons';
 import { Link, useNavigate } from 'react-router-dom';
-// 🌟 CORRECCIÓN DE RUTA: Volvemos a la ruta relativa estándar
 import { useAuth } from '../AuthContext'; 
 import { auth } from '../firebase'; 
 import { signOut } from 'firebase/auth';
 
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://urbanfix-backend-4sfg.onrender.com' 
-    : 'http://localhost:3000'; 
+// ⛔ ELIMINADO: La constante API_BASE_URL
+// (Nuestra capa de servicio 'api.js' ahora maneja esto automáticamente)
 
-// --- Componente Navbar (Copiado de Dashboard) ---
+// --- Componente Navbar (Se mantiene idéntico) ---
 const DashboardNavbar = ({ userEmail, onLogout }) => {
     return (
         <Navbar expand="lg" className="dashboard-navbar" data-bs-theme="dark">
@@ -44,7 +42,7 @@ const DashboardNavbar = ({ userEmail, onLogout }) => {
 };
 
 
-// --- Función Auxiliar de Estado ---
+// --- Función Auxiliar de Estado (Se mantiene idéntica) ---
 const getStatusVariant = (estado) => {
     const estadoNorm = estado?.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || 'PENDIENTE';
 
@@ -54,11 +52,10 @@ const getStatusVariant = (estado) => {
         case 'CERRADO':
             return 'success'; // Verdes
         
-        // 🌟 CAMBIO DE DISEÑO: PENDIENTE ahora usa 'primary' (Naranja UrbanFix)
         case 'PENDIENTE':
         case 'EN CURSO':
         case 'NUEVO': 
-            return 'primary'; // Naranja (antes 'warning')
+            return 'primary'; // Naranja
         
         case 'CANCELADO':
             return 'danger'; // Rojo
@@ -67,11 +64,10 @@ const getStatusVariant = (estado) => {
         case 'VISITA AGENDADA':
             return 'info'; // Azules
 
-        // 🌟 CAMBIO DE DISEÑO: COTIZADO usa 'secondary' (Gris)
         case 'PRESUPUESTADO':
         case 'COTIZADO': 
         case 'COTIZADO (PV)':
-            return 'secondary'; // Gris (antes 'primary')
+            return 'secondary'; // Gris
         default:
             return 'secondary';
     }
@@ -87,18 +83,13 @@ const Solicitudes = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
+    // (Todos los demás estados se mantienen idénticos)
     const [editingRowId, setEditingRowId] = useState(null);
     const [originalRowData, setOriginalRowData] = useState(null);
-
-    // Estados para el Buscador y Filtro
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
-
-    // Estados para el Modal de Detalles
     const [showModal, setShowModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
-
-    // Estados para el Modal de Eliminar
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [solicitudToDelete, setSolicitudToDelete] = useState(null);
 
@@ -108,28 +99,30 @@ const Solicitudes = () => {
         'COTIZADO (PV)', 'PENDIENTE' 
     ];
 
-    // Lógica para obtener los datos
+    // ✅ --- LÓGICA DE OBTENER DATOS REFACTORIZADA ---
     const fetchSolicitudes = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/solicitudes-sheet`);
-            if (response.data.error) throw new Error(response.data.error);
-            setSolicitudes(response.data.solicitudes || []); 
+            // 1. Usamos el servicio
+            const data = await getSolicitudes();
+            // 2. El servicio ya parsea el JSON, accedemos a la propiedad 'solicitudes'
+            setSolicitudes(data.solicitudes || []); 
         } catch (err) {
+            // 3. El error ya viene formateado desde 'handleResponse'
             console.error("Error al obtener solicitudes:", err);
-            setError('Fallo al cargar datos del Backend. Asegúrate que Render esté activo.');
+            setError(err.message || 'Fallo al cargar datos del Backend.');
         } finally {
             setLoading(false);
         }
     };
 
-    // Cargar datos al iniciar
+    // Cargar datos al iniciar (Se mantiene idéntico)
     useEffect(() => {
         fetchSolicitudes();
     }, []); 
 
-    // Handler para Logout
+    // Handler para Logout (Se mantiene idéntico)
     const handleLogout = async () => {
         try {
             await signOut(auth);
@@ -139,7 +132,7 @@ const Solicitudes = () => {
         }
     };
 
-    // --- Lógica de Edición en Tabla ---
+    // --- Lógica de Edición en Tabla (Se mantiene idéntica) ---
     const handleEstadoChange = (solicitudId, newStatus) => {
         setSolicitudes(currentSolicitudes =>
             currentSolicitudes.map(sol =>
@@ -171,31 +164,38 @@ const Solicitudes = () => {
         setOriginalRowData(null);
     };
 
-    // --- Lógica de Guardado (API) ---
+    // ✅ --- LÓGICA DE GUARDADO (API) REFACTORIZADA ---
     const handleSaveClick = async (solicitud) => {
-        const { sheetRowIndex, estado, monto_cotizado } = solicitud;
+        // 1. Preparamos el 'body' que espera el backend
+        const dataToSave = {
+            sheetRowIndex: solicitud.sheetRowIndex,
+            newStatus: solicitud.estado, 
+            newMonto: solicitud.monto_cotizado || '0',
+            // Aseguramos que 'presupuesto' exista, aunque esté vacío
+            newPresupuesto: solicitud.presupuesto || '' 
+        };
+
         try {
-            await axios.patch(`${API_BASE_URL}/api/update-solicitud`, {
-                sheetRowIndex: sheetRowIndex,
-                newStatus: estado, 
-                newMonto: monto_cotizado || '0',
-                newPresupuesto: solicitud.presupuesto || '' 
-            });
+            // 2. Llamamos al servicio 'updateSolicitud'
+            await updateSolicitud(dataToSave);
+
             setEditingRowId(null); 
             setOriginalRowData(null);
         } catch (error) {
+            // 3. Manejamos el error del servicio
             console.error("Error al actualizar el estado:", error);
-            setError("Error al guardar en Google Sheets. La página se recargará.");
+            setError(error.message || "Error al guardar en Google Sheets. La página se recargará.");
+            // Forzamos recarga si falla el guardado para evitar desincronización
             setTimeout(() => window.location.reload(), 2000); 
         }
     };
 
-    // --- Lógica de Navegación ---
+    // --- Lógica de Navegación (Se mantiene idéntica) ---
     const handleCotizarClick = (solicitud) => {
         navigate(`/cotizar/${solicitud.id}`, { state: { solicitud } });
     };
 
-    // --- Lógica del Modal de Detalles ---
+    // --- Lógica del Modal de Detalles (Se mantiene idéntica) ---
     const handleShowModal = (solicitud) => {
         setSelectedSolicitud(solicitud);
         setShowModal(true);
@@ -214,28 +214,38 @@ const Solicitudes = () => {
         setShowDeleteModal(false);
         setSolicitudToDelete(null);
     };
+
+    // ✅ --- LÓGICA DE ELIMINAR (API) REFACTORIZADA ---
     const handleConfirmDelete = async () => {
         if (!solicitudToDelete) return;
+
+        // 1. Preparamos el 'body' que espera el backend
+        const dataToDelete = { 
+            sheetRowIndex: solicitudToDelete.sheetRowIndex 
+        };
+
         setLoading(true); 
         setError(null);
         try {
-            await axios.delete(`${API_BASE_URL}/api/eliminar-solicitud`, {
-                data: { sheetRowIndex: solicitudToDelete.sheetRowIndex }
-            });
+            // 2. Llamamos al servicio 'deleteSolicitud'
+            await deleteSolicitud(dataToDelete);
+
+            // 3. Si tiene éxito, actualizamos el estado local
             setSolicitudes(prevSolicitudes => 
                 prevSolicitudes.filter(s => s.id !== solicitudToDelete.id)
             );
             handleCloseDeleteModal(); 
         } catch (err) {
+            // 4. Manejamos el error del servicio
             console.error("Error al eliminar la solicitud:", err);
-            setError("Error al eliminar la solicitud.");
+            setError(err.message || "Error al eliminar la solicitud.");
         } finally {
             setLoading(false);
         }
     };
 
-    // --- Renderizado ---
-    if (error) {
+    // --- Renderizado (Se mantiene idéntico) ---
+    if (error && solicitudes.length === 0) { // Solo muestra error a pantalla completa si no hay datos
         return (
             <>
                 <DashboardNavbar 
@@ -245,13 +255,14 @@ const Solicitudes = () => {
                 <div className="dashboard-content">
                     <Container className="py-5">
                         <Alert variant="danger">{error}</Alert>
+                        <Button onClick={fetchSolicitudes} variant="primary">Reintentar Carga</Button>
                     </Container>
                 </div>
             </>
         );
     }
 
-    // --- Lógica de Filtro ---
+    // --- Lógica de Filtro (Se mantiene idéntica) ---
     const filteredSolicitudes = solicitudes.filter(sol => {
         const matchesSearch = sol.nombre_apellido?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             sol.direccion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -260,6 +271,7 @@ const Solicitudes = () => {
         return matchesSearch && matchesStatus;
     });
 
+    // --- RENDERIZADO PRINCIPAL (Se mantiene idéntico, pero con manejo de error en línea) ---
     return (
         <>
             {/* 1. RENDERIZAMOS LA NAVBAR */}
@@ -274,21 +286,19 @@ const Solicitudes = () => {
                     
                     {/* --- Título y Botones --- */}
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        {/* 3. APLICAMOS EL TÍTULO DEL DASHBOARD */}
                         <h3 className="dashboard-title">
                             Gestión de Solicitudes <span className="text-muted">({filteredSolicitudes.length} / {solicitudes.length})</span>
                         </h3>
                         <Stack direction="horizontal" gap={2}>
                             <Button 
-                                variant="outline-primary" // Naranja outline (definido en CSS)
+                                variant="outline-primary" 
                                 onClick={fetchSolicitudes} 
                                 disabled={loading}
                                 title="Refrescar Datos"
                             >
-                                {loading ? <Spinner as="span" animation="border" size="sm" /> : <ArrowClockwise size={20} />}
+                                {loading && !error ? <Spinner as="span" animation="border" size="sm" /> : <ArrowClockwise size={20} />}
                             </Button>
                             <Link to="/dashboard">
-                                {/* 4. APLICAMOS EL BOTÓN NARANJA (ahora 'variant="primary"') */}
                                 <Button variant="primary">
                                     Volver al Panel
                                 </Button>
@@ -296,20 +306,26 @@ const Solicitudes = () => {
                         </Stack>
                     </div>
 
+                    {/* ✅ AÑADIDO: Alerta de error no intrusiva si falla el guardado/borrado */}
+                    {error && (
+                        <Alert variant="danger" onClose={() => setError(null)} dismissible>
+                            <strong>Error de API:</strong> {error}
+                        </Alert>
+                    )}
+
                     {/* --- Controles de Búsqueda y Filtro --- */}
                     <Card className="mb-4 shadow-sm">
                         <Card.Body className="p-4">
                             <Row>
                                 <Col md={8}>
                                     <Form.Group controlId="searchTerm">
-                                        {/* 5. APLICAMOS ESTILOS DE FORMULARIO */}
                                         <Form.Label className="form-label-custom">Buscar Cliente (Nombre, Teléfono o Dirección)</Form.Label>
                                         <Form.Control
                                             type="text"
                                             placeholder="Buscar..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            size="lg" // Input grande
+                                            size="lg" 
                                         />
                                     </Form.Group>
                                 </Col>
@@ -319,7 +335,7 @@ const Solicitudes = () => {
                                         <Form.Select
                                             value={statusFilter}
                                             onChange={(e) => setStatusFilter(e.target.value)}
-                                            size="lg" // Select grande
+                                            size="lg" 
                                         >
                                             <option value="">Todos los Estados</option>
                                             {estadosValidos.map(estado => (
@@ -343,15 +359,14 @@ const Solicitudes = () => {
                     {/* --- Tabla de Solicitudes --- */}
                     {!loading && filteredSolicitudes.length === 0 && (
                          <Alert variant="info" className="text-center">
-                            {solicitudes.length === 0 
-                                ? "No hay solicitudes para mostrar." 
-                                : "No se encontraron solicitudes que coincidan con la búsqueda."}
-                        </Alert>
+                             {solicitudes.length === 0 
+                                 ? "No hay solicitudes para mostrar." 
+                                 : "No se encontraron solicitudes que coincidan con la búsqueda."}
+                         </Alert>
                     )}
 
                     {filteredSolicitudes.length > 0 && (
                         <Table striped bordered hover responsive className="shadow-sm align-middle bg-white">
-                            {/* 6. APLICAMOS LA CABECERA DE TABLA GRIS */}
                             <thead className="uf-table-header">
                                 <tr>
                                     <th>#</th>
@@ -408,7 +423,6 @@ const Solicitudes = () => {
                                                     </Form.Select>
                                                 ) : (
                                                     <Button 
-                                                        // 7. APLICAMOS EL NUEVO VARIANT (primary = Naranja)
                                                         variant={getStatusVariant(solicitud.estado)} 
                                                         size="sm"
                                                         className="fw-bold"
@@ -448,7 +462,7 @@ const Solicitudes = () => {
                                                     // --- MODO LECTURA ---
                                                     <Stack direction="horizontal" gap={2}>
                                                         <Button 
-                                                            variant="outline-primary" // Naranja outline
+                                                            variant="outline-primary" 
                                                             size="sm" 
                                                             onClick={() => handleEditClick(solicitud)}
                                                             title="Editar Estado y Monto"

@@ -1,33 +1,30 @@
-// src/components/SolicitudForm.js
-
 import React, { useState } from 'react';
-import axios from 'axios';
-// ✅ 'Stack' FUE ELIMINADO DE ESTA LÍNEA PORQUE NO SE USABA
+// ⛔ ELIMINADO: import axios from 'axios';
+// ✅ AÑADIDO: Importamos nuestra función centralizada
+import { createSolicitud } from '../../services/api'; 
 import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from 'react-bootstrap'; 
 import { Link } from 'react-router-dom';
 
-// Usamos la misma lógica de URL (Producción o Local)
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://urbanfix-backend-4sfg.onrender.com' // <-- ¡Tu URL pública!
-    : 'http://localhost:3000';
+// ⛔ ELIMINADO: La constante API_BASE_URL
+// (Nuestra capa de servicio 'api.js' ahora maneja esto automáticamente)
 
 const SolicitudForm = () => {
     // 🌟 ESTADOS AMPLIADOS PARA INCLUIR URGENCIA Y VENTANAS
+    // (Estos estados se mantienen igual)
     const [formData, setFormData] = useState({
         nombre_apellido: '',
         telefono: '',
         direccion: '',
         categoria_trabajo: '',
         descripcion_problema: '',
-        // Asignamos la primera opción como valor por defecto para el radio button
         urgencia: 'Normal: Es un arreglo, pero no hay apuro.', 
-        ventanas_horarias: [] // Array para checkboxes
+        ventanas_horarias: [] 
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
-    // Opciones del Formulario (Basado en tus capturas)
+    // Opciones del Formulario (Se mantienen igual)
     const categorias = ['Plomería', 'Electricidad', 'Gas y termotanques (Calefones, estufas)', 'Aire Acondicionado (Instalación / Mantenimiento)', 'Cerrajería (Urgencias / Cambios)', 'Pintura', 'Albañilería (Arreglos menores, Durlock, etc.)', 'Carpintería / Herrería', 'Electrodomésticos (Lavarropas, heladeras, etc.)', 'Jardinería / Limpieza técnica', 'Otro'];
     
     const opcionesUrgencia = [
@@ -44,6 +41,7 @@ const SolicitudForm = () => {
         'Lo antes posible (Solo para urgencias)'
     ];
 
+    // Esta lógica de manejo de inputs se mantiene idéntica
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevData => ({
@@ -52,40 +50,40 @@ const SolicitudForm = () => {
         }));
     };
 
-    // 🌟 NUEVO: Manejador para Checkboxes de Ventanas Horarias
     const handleCheckboxChange = (e) => {
         const { value, checked } = e.target;
         setFormData(prevData => {
             const currentVentanas = prevData.ventanas_horarias;
             if (checked) {
-                // Añadir la opción si está marcada
                 return { ...prevData, ventanas_horarias: [...currentVentanas, value] };
             } else {
-                // Quitar la opción si está desmarcada
                 return { ...prevData, ventanas_horarias: currentVentanas.filter(v => v !== value) };
             }
         });
     };
 
+    // ✅ --- LÓGICA DE ENVÍO REFACTORIZADA ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setSuccess(null);
 
-        // 🌟 PREPARAR DATOS PARA LA API: Convertir el array de ventanas a un string CSV
+        // La preparación de datos es idéntica
         const dataToSend = {
             ...formData,
-            ventanas_horarias: formData.ventanas_horarias.join(', ') // String separado por comas
+            ventanas_horarias: formData.ventanas_horarias.join(', ') 
         };
 
         try {
-            // 1. Llamamos a la nueva ruta POST en el Backend
-            const response = await axios.post(`${API_BASE_URL}/api/crear-solicitud`, dataToSend);
+            // 1. Llamamos a nuestra nueva función del servicio
+            // 'response' ya es el objeto JSON parseado (gracias a handleResponse en api.js)
+            const response = await createSolicitud(dataToSend);
 
-            if (response.data.success) {
+            // 2. Comprobamos la respuesta del backend
+            if (response.success) {
                 setSuccess('¡Solicitud enviada con éxito! Nos pondremos en contacto a la brevedad.');
-                // 2. Limpiamos el formulario (restaurando los valores por defecto)
+                // 3. Limpiamos el formulario (restaurando los valores por defecto)
                 setFormData({
                     nombre_apellido: '',
                     telefono: '',
@@ -96,43 +94,40 @@ const SolicitudForm = () => {
                     ventanas_horarias: []
                 });
             } else {
-                throw new Error('Error al enviar la solicitud.');
+                // Si el backend responde { success: false, message: "..." }
+                throw new Error(response.message || 'Error al procesar la solicitud.');
             }
         
         } catch (err) {
+            // 'err.message' vendrá del error lanzado en 'api.js' o del 'throw' de arriba
             console.error("Error al crear la solicitud:", err);
-            setError('Error al enviar la solicitud. Por favor, intente más tarde.');
+            setError(err.message || 'Error al enviar la solicitud. Por favor, intente más tarde.');
         } finally {
             setLoading(false);
         }
     };
 
+    // --- El JSX (la UI) no necesita ningún cambio ---
     return (
-        // 1. APLICAMOS EL FONDO DEGRADADO Y CENTRADO
         <Container fluid className="login-page-container d-flex align-items-center justify-content-center py-5">
             <Row className="justify-content-center w-100">
-                {/* 2. Ajustamos el ancho para un formulario */}
                 <Col xs={11} sm={10} md={9} lg={8} xl={7}>
-                    {/* 3. APLICAMOS EL ESTILO DE TARJETA DEL LOGIN */}
                     <Card className="login-card shadow-lg">
                         <Card.Body className="p-4 p-md-5">
-                            {/* 4. APLICAMOS EL ESTILO DE TÍTULO DEL LOGIN */}
                             <h2 className="text-center mb-3 user-login-title">Solicitar Presupuesto</h2>
                             <p className="text-center text-muted mb-4">
                                 Complete el formulario y nos pondremos en contacto para coordinar una visita o enviarle una cotización.
                             </p>
                             
-                            {/* Mensajes de Éxito o Error */}
                             {success && <Alert variant="success">{success}</Alert>}
                             {error && <Alert variant="danger">{error}</Alert>}
 
                             <Form onSubmit={handleSubmit}>
-                                {/* ----------------------- SECCIÓN DATOS DE CONTACTO ----------------------- */}
+                                {/* SECCIÓN DATOS DE CONTACTO */}
                                 <h5 className="form-section-title">Datos de Contacto</h5>
                                 <Row>
                                     <Col md={6}>
                                         <Form.Group className="mb-3" controlId="formNombre">
-                                            {/* 5. APLICAMOS ESTILOS DE LABEL E INPUT */}
                                             <Form.Label className="form-label-custom">Nombre y Apellido</Form.Label>
                                             <Form.Control 
                                                 type="text" 
@@ -158,7 +153,6 @@ const SolicitudForm = () => {
                                         </Form.Group>
                                     </Col>
                                 </Row>
-
                                 <Form.Group className="mb-4" controlId="formDireccion">
                                     <Form.Label className="form-label-custom">Dirección / Localidad</Form.Label>
                                     <Form.Control 
@@ -172,9 +166,8 @@ const SolicitudForm = () => {
                                     />
                                 </Form.Group>
 
-                                {/* ----------------------- SECCIÓN PROBLEMA ----------------------- */}
+                                {/* SECCIÓN PROBLEMA */}
                                 <h5 className="form-section-title">Detalles del Trabajo</h5>
-                                
                                 <Form.Group className="mb-3" controlId="formCategoria">
                                     <Form.Label className="form-label-custom">Categoría del Trabajo</Form.Label>
                                     <Form.Select
@@ -190,7 +183,6 @@ const SolicitudForm = () => {
                                         ))}
                                     </Form.Select>
                                 </Form.Group>
-
                                 <Form.Group className="mb-4" controlId="formDescripcion">
                                     <Form.Label className="form-label-custom">Descripción del Problema</Form.Label>
                                     <Form.Control 
@@ -205,7 +197,7 @@ const SolicitudForm = () => {
                                     />
                                 </Form.Group>
                                 
-                                {/* ----------------------- SECCIÓN URGENCIA (Radio Buttons) ----------------------- */}
+                                {/* SECCIÓN URGENCIA (Radio Buttons) */}
                                 <Form.Group className="mb-4" controlId="formUrgencia">
                                     <Form.Label className="form-label-custom fw-bold">¿QUÉ TAN URGENTE ES?</Form.Label>
                                     {opcionesUrgencia.map((opcion, index) => (
@@ -223,7 +215,7 @@ const SolicitudForm = () => {
                                     ))}
                                 </Form.Group>
 
-                                {/* ----------------------- SECCIÓN HORARIOS (Checkboxes) ----------------------- */}
+                                {/* SECCIÓN HORARIOS (Checkboxes) */}
                                 <Form.Group className="mb-4" controlId="formHorarios">
                                     <Form.Label className="form-label-custom fw-bold">VENTANAS HORARIAS</Form.Label>
                                     <p className="text-muted small mb-2">Seleccione todas las que apliquen:</p>
@@ -242,9 +234,7 @@ const SolicitudForm = () => {
                                     ))}
                                 </Form.Group>
 
-
                                 <div className="d-grid gap-3 mt-4">
-                                    {/* 6. APLICAMOS EL BOTÓN NARANJA DEL LOGIN */}
                                     <Button variant="primary" type="submit" size="lg" disabled={loading} className="w-100 login-button-uf">
                                         {loading ? <Spinner as="span" animation="border" size="sm" /> : 'Enviar Solicitud'}
                                     </Button>
